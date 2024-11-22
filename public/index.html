@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crypto Price Predictor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <style>
+      .chart-container {
+        min-height: 400px;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-900 text-white">
+    <div class="container mx-auto px-4 py-8">
+      <h1 class="text-3xl font-bold mb-8">Crypto Price Predictor</h1>
+
+      <!-- Form Controls -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div>
+          <label class="block text-sm font-medium mb-2">Symbol</label>
+          <input
+            type="text"
+            id="symbol"
+            value="BTCUSDT"
+            class="w-full p-2 rounded bg-gray-800 border border-gray-700"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-2">Interval</label>
+          <select
+            id="interval"
+            class="w-full p-2 rounded bg-gray-800 border border-gray-700"
+          >
+            <option value="1m">1 minute</option>
+            <option value="5m">5 minutes</option>
+            <option value="15m">15 minutes</option>
+            <option value="30m">30 minutes</option>
+            <option value="1h" selected>1 hour</option>
+            <option value="4h">4 hours</option>
+            <option value="1d">1 day</option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button
+            id="predict"
+            class="w-full p-2 bg-blue-600 rounded hover:bg-blue-700"
+          >
+            Predict
+          </button>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="bg-gray-800 p-4 rounded-lg">
+          <h2 class="text-xl font-semibold mb-4">Price Analysis</h2>
+          <div id="priceChart" class="chart-container"></div>
+        </div>
+        <div class="bg-gray-800 p-4 rounded-lg">
+          <h2 class="text-xl font-semibold mb-4">Technical Indicators</h2>
+          <div id="indicatorChart" class="chart-container"></div>
+        </div>
+      </div>
+
+      <!-- Advanced Analytics -->
+      <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="bg-gray-800 p-4 rounded-lg">
+          <h2 class="text-xl font-semibold mb-4">Market Analysis</h2>
+          <div id="marketData" class="grid grid-cols-2 gap-4">
+            <!-- Market data will be inserted here -->
+          </div>
+        </div>
+        <div class="bg-gray-800 p-4 rounded-lg">
+          <h2 class="text-xl font-semibold mb-4">Technical Analysis</h2>
+          <div id="technicalData" class="grid grid-cols-2 gap-4">
+            <!-- Technical data will be inserted here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Prediction Results -->
+      <div id="results" class="mt-8 bg-gray-800 p-4 rounded-lg">
+        <h2 class="text-xl font-semibold mb-4">Prediction Results</h2>
+        <div id="predictionData" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <!-- Results will be inserted here -->
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let priceChart, indicatorChart;
+
+      // Initialize charts
+      function initCharts() {
+        const chartOptions = {
+          chart: {
+            type: "line",
+            animations: {
+              enabled: false,
+            },
+            foreColor: "#fff",
+            background: "transparent",
+          },
+          stroke: {
+            curve: "smooth",
+            width: 2,
+          },
+          grid: {
+            borderColor: "#404040",
+          },
+          tooltip: {
+            theme: "dark",
+          },
+          xaxis: {
+            type: "datetime",
+          },
+        };
+
+        priceChart = new ApexCharts(document.querySelector("#priceChart"), {
+          ...chartOptions,
+          series: [
+            {
+              name: "Price",
+              data: [],
+            },
+            {
+              name: "Predicted",
+              data: [],
+            },
+          ],
+        });
+
+        indicatorChart = new ApexCharts(
+          document.querySelector("#indicatorChart"),
+          {
+            ...chartOptions,
+            series: [
+              {
+                name: "RSI",
+                data: [],
+              },
+              {
+                name: "Momentum",
+                data: [],
+              },
+              {
+                name: "Volatility",
+                data: [],
+              },
+            ],
+          }
+        );
+
+        priceChart.render();
+        indicatorChart.render();
+      }
+
+      function updateCharts(data) {
+        const timestamp = Date.now();
+
+        // Update price chart
+        priceChart.updateSeries([
+          {
+            name: "Current Price",
+            data: [[timestamp, data.currentPrice]],
+          },
+          {
+            name: "Predicted Price",
+            data: [
+              [timestamp, data.currentPrice],
+              [timestamp + 3600000, data.predictedPrice],
+            ],
+          },
+        ]);
+
+        // Update indicator chart
+        indicatorChart.updateSeries([
+          {
+            name: "RSI",
+            data: [[timestamp, data.analytics.technical.rsi]],
+          },
+          {
+            name: "Momentum",
+            data: [[timestamp, data.analytics.momentum]],
+          },
+          {
+            name: "Volatility",
+            data: [[timestamp, data.analytics.volatility]],
+          },
+        ]);
+      }
+
+      function formatNumber(num, symbol) {
+        if (!num) return "0";
+
+        // Xử lý hiển thị theo loại coin
+        if (symbol.includes("SHIB") || symbol.includes("DOGE") || num < 0.01) {
+          return num.toPrecision(8);
+        } else if (num < 1) {
+          return num.toPrecision(6);
+        } else if (num < 100) {
+          return num.toPrecision(8);
+        } else {
+          return num.toPrecision(10);
+        }
+      }
+
+      function updateAnalytics(data) {
+        // Update market analysis
+        document.getElementById("marketData").innerHTML = `
+                <div class="p-4 bg-gray-700 rounded">
+                    <div class="text-sm text-gray-400">Current Price</div>
+                    <div class="text-lg">${formatNumber(
+                      data.currentPrice,
+                      data.symbol
+                    )}</div>
+                </div>
+                <div class="p-4 bg-gray-700 rounded">
+                    <div class="text-sm text-gray-400">Predicted Price</div>
+                    <div class="text-lg">${formatNumber(
+                      data.predictedPrice,
+                      data.symbol
+                    )}</div>
+                </div>
+                <div class="p-4 bg-gray-700 rounded">
+                    <div class="text-sm text-gray-400">Market Pattern</div>
+                    <div class="text-lg">${data.pattern}</div>
+                </div>
+                <div class="p-4 bg-gray-700 rounded">
+                    <div class="text-sm text-gray-400">Trend</div>
+                    <div class="text-lg">${data.trend}</div>
+                </div>
+            `;
+
+        // Update technical analysis
+        document.getElementById("technicalData").innerHTML = `
+                <div class="p-4 bg-gray-700 rounded">
+                    <div class="text-sm text-gray-400">RSI</div>
+                    <div class="text-lg">${data.analytics.technical.rsi.toFixed(
+                      2
+                    )}</div>
+                </div>
+                <div class="p-4 bg-gray-700 rounded">
+                    <div class="text-sm text-gray-400">Momentum</div>
+                    <div class="text-lg">${data.analytics.momentum.toFixed(
+                      2
+                    )}%</div>
+                </div>
+                <div class="p-4 bg-gray-700 rounded">
+                    <div class="text-sm text-gray-400">Volatility</div>
+                    <div class="text-lg">${data.analytics.volatility.toFixed(
+                      2
+                    )}%</div>
+                </div>
+                <div class="p-4 bg-gray-700 rounded">
+                    <div class="text-sm text-gray-400">Confidence</div>
+                    <div class="text-lg">${data.confidence.toFixed(2)}%</div>
+                </div>
+            `;
+      }
+
+      async function updatePrediction() {
+        const symbol = document.getElementById("symbol").value;
+        const interval = document.getElementById("interval").value;
+
+        try {
+          const response = await fetch(
+            `/api/predict?symbol=${symbol}&interval=${interval}`
+          );
+          const data = await response.json();
+
+          if (data.error) {
+            throw new Error(data.error);
+          }
+
+          updateCharts(data);
+          updateAnalytics(data);
+        } catch (error) {
+          console.error("Prediction error:", error);
+          alert("Error getting prediction: " + error.message);
+        }
+      }
+
+      // Initialize
+      document.addEventListener("DOMContentLoaded", () => {
+        initCharts();
+        document
+          .getElementById("predict")
+          .addEventListener("click", updatePrediction);
+        updatePrediction(); // Initial prediction
+      });
+    </script>
+  </body>
+</html>
