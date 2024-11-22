@@ -6,9 +6,21 @@ const limiter = new RateLimiter({ tokensPerInterval: 30, interval: "minute" });
 
 Bun.serve({
   development: true,
-  port: 1505,
+  port: process.env.PORT ? parseInt(process.env.PORT) : 1505,
   async fetch(req) {
     try {
+      // Add CORS headers
+      const headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type',
+      };
+
+      // Handle OPTIONS request for CORS
+      if (req.method === 'OPTIONS') {
+        return new Response(null, { headers });
+      }
+
       // Check rate limit
       const hasToken = limiter.tryRemoveTokens(1);
       if (!hasToken) {
@@ -28,6 +40,13 @@ Bun.serve({
       // Serve static HTML
       if (url.pathname === "/") {
         return new Response(Bun.file("./public/index.html"));
+      }
+
+      // Add health check endpoint
+      if (url.pathname === '/health') {
+        return new Response(JSON.stringify({ status: 'ok' }), {
+          headers: { ...headers, 'Content-Type': 'application/json' }
+        });
       }
 
       // Add validation for symbol
@@ -50,6 +69,7 @@ Bun.serve({
         const prediction = await predictPrice(symbol, interval);
         return new Response(JSON.stringify(prediction), {
           headers: {
+            ...headers,
             "Content-Type": "application/json",
             "Cache-Control": "no-cache",
           },
@@ -72,3 +92,5 @@ Bun.serve({
     }
   },
 });
+
+console.log(`Listening on http://localhost:${process.env.PORT || 1505}`);

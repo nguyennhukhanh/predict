@@ -1,5 +1,7 @@
-
 FROM oven/bun:1
+
+# Install wget for healthcheck
+RUN apt-get update && apt-get install -y wget && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
