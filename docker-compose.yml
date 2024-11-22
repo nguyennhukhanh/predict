@@ -1,0 +1,20 @@
+
+version: '3.8'
+
+services:
+  predict-app:
+    build: .
+    container_name: crypto-predict
+    ports:
+      - "1505:1505"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - .:/app
+      - /app/node_modules
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:1505"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
