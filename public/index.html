@@ -62,12 +62,12 @@
             id="interval"
             class="w-full p-2 rounded bg-gray-800 border border-gray-700"
           >
-            <option value="1m">1 minute</option>
+            <option value="1m" selected>1 minute</option>
             <option value="3m">3 minutes</option>
             <option value="5m">5 minutes</option>
             <option value="15m">15 minutes</option>
             <option value="30m">30 minutes</option>
-            <option value="1h" selected>1 hour</option>
+            <option value="1h">1 hour</option>
             <option value="2h">2 hours</option>
             <option value="4h">4 hours</option>
             <option value="6h">6 hours</option>
@@ -122,6 +122,9 @@
         <h2 class="text-xl font-semibold mb-4">Prediction Results</h2>
         <div id="predictionData" class="grid grid-cols-2 md:grid-cols-4 gap-4">
           <!-- Results will be inserted here -->
+        </div>
+        <div id="predictionDescription" class="mt-4 p-4 bg-gray-700 rounded">
+          <!-- Prediction description will be inserted here -->
         </div>
       </div>
     </div>
@@ -549,6 +552,13 @@
           </div>
         `;
 
+        // Update prediction description
+        const description = generatePredictionDescription(data);
+        document.getElementById("predictionDescription").innerHTML = `
+          <div class="text-sm text-gray-400">Prediction Description</div>
+          <div class="text-md">${description}</div>
+        `;
+
         // Highlight significant changes
         const priceChange =
           ((data.predictedPrice - data.currentPrice) / data.currentPrice) * 100;
@@ -557,6 +567,157 @@
             .getElementById("predictionData")
             .firstElementChild.classList.add("animate-pulse");
         }
+      }
+
+      function generatePredictionDescription(data) {
+        const priceChange =
+          ((data.predictedPrice - data.currentPrice) / data.currentPrice) * 100;
+        let description = "";
+
+        // Phân tích tổng quan thị trường
+        description += `<strong>Phân tích tổng quan:</strong><br>`;
+        description += `• ${
+          data.symbol
+        } hiện đang giao dịch ở mức ${data.currentPrice.toFixed(2)} USD${
+          data.trend.includes("BULLISH")
+            ? ", đang trong xu hướng tăng"
+            : data.trend.includes("BEARISH")
+            ? ", đang trong xu hướng giảm"
+            : ", đang trong giai đoạn tích lũy"
+        }<br>`;
+        description += `• Dự báo giá: ${data.predictedPrice.toFixed(2)} USD (${
+          priceChange > 0 ? "+" : ""
+        }${priceChange.toFixed(2)}%) trong ${
+          document.getElementById("interval").value
+        } tới<br>`;
+        description += `• Độ tin cậy: ${data.confidence.toFixed(2)}% - ${
+          data.confidence > 75
+            ? "Tín hiệu rất mạnh"
+            : data.confidence > 60
+            ? "Tín hiệu đáng tin cậy"
+            : data.confidence > 45
+            ? "Cần thêm xác nhận"
+            : "Tín hiệu yếu"
+        }<br><br>`;
+
+        // Phân tích kỹ thuật chuyên sâu
+        description += `<strong>Phân tích chỉ báo kỹ thuật:</strong><br><br>`;
+
+        // 1. Phân tích RSI (Relative Strength Index - Chỉ báo sức mạnh tương đối)
+        description += `<strong>1. Chỉ báo RSI (${data.analytics.technical.rsi.toFixed(
+          2
+        )}):</strong><br>`;
+        description += `• Ý nghĩa: Đo lường tốc độ và mức độ thay đổi giá, xác định vùng quá mua/quá bán<br>`;
+        description += `• Phân tích: ${
+          data.analytics.technical.rsi > 80
+            ? "VÙNG QUÁ MUA MẠNH (>80) - Rủi ro điều chỉnh giảm rất cao, nên chốt lời dần"
+            : data.analytics.technical.rsi > 70
+            ? "VÙNG QUÁ MUA (>70) - Cảnh báo khả năng điều chỉnh, cân nhắc chốt lời"
+            : data.analytics.technical.rsi < 20
+            ? "VÙNG QUÁ BÁN MẠNH (<20) - Cơ hội tích lũy tốt, có thể xuất hiện đáy"
+            : data.analytics.technical.rsi < 30
+            ? "VÙNG QUÁ BÁN (<30) - Vùng tích lũy tiềm năng, cân nhắc mua vào"
+            : data.analytics.technical.rsi > 60
+            ? "VÙNG TĂNG ĐIỂM (>60) - Động lượng tăng đang mạnh, xu hướng tích cực"
+            : data.analytics.technical.rsi < 40
+            ? "VÙNG GIẢM ĐIỂM (<40) - Động lượng giảm đang mạnh, thận trọng"
+            : "VÙNG TRUNG TÍNH (40-60) - Thị trường đang cân bằng, chờ tín hiệu breakout"
+        }<br><br>`;
+
+        // 2. Phân tích MACD (Moving Average Convergence Divergence)
+        const macd = data.analytics.technical.macd;
+        description += `<strong>2. Chỉ báo MACD:</strong><br>`;
+        description += `• Ý nghĩa: Kết hợp các đường trung bình động để xác định xu hướng và điểm chuyển xu hướng<br>`;
+        description += `• Thông số: MACD (${macd.macd.toFixed(
+          2
+        )}) | Signal (${macd.signal.toFixed(
+          2
+        )}) | Histogram (${macd.histogram.toFixed(2)})<br>`;
+        description += `• Phân tích: ${
+          macd.histogram > 0 && macd.macd > macd.signal
+            ? "TÍCH CỰC MẠNH - MACD vượt Signal và Histogram dương, xác nhận xu hướng tăng đang mạnh"
+            : macd.histogram > 0
+            ? "TÍCH CỰC - Histogram dương cho thấy động lượng tăng đang chiếm ưu thế"
+            : macd.histogram < 0 && macd.macd < macd.signal
+            ? "TIÊU CỰC MẠNH - MACD dưới Signal và Histogram âm, xác nhận xu hướng giảm đang mạnh"
+            : "TIÊU CỰC - Histogram âm cho thấy động lượng giảm đang chiếm ưu thế"
+        }<br><br>`;
+
+        // 3. Phân tích Momentum (Động lượng)
+        description += `<strong>3. Chỉ báo Momentum (${data.analytics.momentum.toFixed(
+          2
+        )}%):</strong><br>`;
+        description += `• Ý nghĩa: Đo lường tốc độ thay đổi giá, xác định độ mạnh của xu hướng<br>`;
+        description += `• Phân tích: ${
+          Math.abs(data.analytics.momentum) > 50
+            ? "ĐỘNG LƯỢNG CỰC MẠNH (>50%) - Xu hướng đang rất mạnh và có thể tiếp tục"
+            : Math.abs(data.analytics.momentum) > 30
+            ? "ĐỘNG LƯỢNG MẠNH (30-50%) - Xu hướng đang có độ tin cậy cao"
+            : Math.abs(data.analytics.momentum) > 15
+            ? "ĐỘNG LƯỢNG TRUNG BÌNH (15-30%) - Xu hướng đang phát triển"
+            : "ĐỘNG LƯỢNG YẾU (<15%) - Xu hướng không rõ ràng hoặc đang suy yếu"
+        }<br>`;
+        description += `• Hướng xu hướng: ${
+          data.analytics.momentum > 0
+            ? "🔼 TĂNG - Động lượng tăng điểm đang chiếm ưu thế"
+            : "🔽 GIẢM - Động lượng giảm điểm đang chiếm ưu thế"
+        }<br>`;
+
+        // Phân tích mô hình giá
+        description += `<br><strong>Phân tích mô hình giá:</strong><br>`;
+        description += `• Mô hình hiện tại: ${
+          data.pattern === "ACCUMULATION"
+            ? "Tích lũy - Giai đoạn hình thành đáy"
+            : data.pattern === "BREAKOUT_UP"
+            ? "Bứt phá tăng - Có thể bắt đầu xu hướng mới"
+            : data.pattern === "BREAKOUT_DOWN"
+            ? "Bứt phá giảm - Cảnh báo thị trường yếu"
+            : data.pattern === "CONSOLIDATION"
+            ? "Tích lũy ngang - Chờ breakout"
+            : "Chưa hình thành mô hình rõ ràng"
+        }<br>`;
+
+        // Phân tích rủi ro
+        description += `<br><strong>Đánh giá rủi ro:</strong><br>`;
+        description += `• Độ biến động: ${data.analytics.volatility.toFixed(
+          2
+        )}% - ${
+          data.analytics.volatility > 50
+            ? "Cực kỳ cao, nên giảm margin"
+            : data.analytics.volatility > 30
+            ? "Cao, cân nhắc giảm khối lượng"
+            : data.analytics.volatility > 15
+            ? "Trung bình"
+            : "Thấp, có thể tăng khối lượng"
+        }<br>`;
+
+        // Khuyến nghị giao dịch
+        description += `<br><strong>Khuyến nghị giao dịch:</strong><br>`;
+        description += `• ${
+          data.confidence > 70 && priceChange > 0
+            ? "💹 Tín hiệu MUA mạnh"
+            : data.confidence > 70 && priceChange < 0
+            ? "🔻 Tín hiệu BÁN mạnh"
+            : data.confidence > 50 && priceChange > 0
+            ? "📈 Có thể MUA với khối lượng vừa phải"
+            : data.confidence > 50 && priceChange < 0
+            ? "📉 Có thể BÁN với khối lượng vừa phải"
+            : "⚖️ Nên đứng ngoài thị trường và chờ tín hiệu rõ ràng hơn"
+        }<br>`;
+
+        // Điểm cần chú ý
+        description += `• Điểm cần chú ý: ${
+          data.analytics.volatility > 40
+            ? "Nên đặt stoploss chặt chẽ do biến động cao"
+            : data.analytics.technical.rsi > 70 ||
+              data.analytics.technical.rsi < 30
+            ? "Thị trường đang ở vùng cực đoan"
+            : data.confidence < 50
+            ? "Tín hiệu chưa đủ mạnh, nên chờ thêm xác nhận"
+            : "Có thể giao dịch theo trend với quản lý rủi ro phù hợp"
+        }`;
+
+        return description;
       }
 
       async function updatePrediction() {
