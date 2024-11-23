@@ -4,6 +4,35 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Crypto Price Predictor</title>
+    <meta
+      name="description"
+      content="Predict cryptocurrency prices using advanced analytics and machine learning."
+    />
+    <meta
+      name="keywords"
+      content="crypto, cryptocurrency, price prediction, machine learning, analytics"
+    />
+    <meta
+      property="og:image"
+      content="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/6e75e786-add4-4040-a3ff-1549360e86c8/dekwaen-cdd95a7e-97f6-448d-8a37-4cb45fd8316d.jpg/v1/fill/w_1103,h_725,q_70,strp/crypto_mythology_by_ppp597_dekwaen-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9ODQxIiwicGF0aCI6IlwvZlwvNmU3NWU3ODYtYWRkNC00MDQwLWEzZmYtMTU0OTM2MGU4NmM4XC9kZWt3YWVuLWNkZDk1YTdlLTk3ZjYtNDQ4ZC04YTM3LTRjYjQ1ZmQ4MzE2ZC5qcGciLCJ3aWR0aCI6Ijw9MTI4MCJ9XV0sImF1ZCI6WyJ1cm46c2VydmljZTppbWFnZS5vcGVyYXRpb25zIl19.H07bfXrVB7ZzfTvysDiPTgZ7T-xyN2SRui1vxivm6lI"
+    />
+    <meta property="og:title" content="Crypto Price Predictor" />
+    <meta
+      property="og:description"
+      content="Predict cryptocurrency prices using advanced analytics and machine learning."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://crypto.phimmoi1s.org/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Crypto Price Predictor" />
+    <meta
+      name="twitter:description"
+      content="Predict cryptocurrency prices using advanced analytics and machine learning."
+    />
+    <meta
+      name="twitter:image"
+      content="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/6e75e786-add4-4040-a3ff-1549360e86c8/dekwaen-cdd95a7e-97f6-448d-8a37-4cb45fd8316d.jpg/v1/fill/w_1103,h_725,q_70,strp/crypto_mythology_by_ppp597_dekwaen-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9ODQxIiwicGF0aCI6IlwvZlwvNmU3NWU3ODYtYWRkNC00MDQwLWEzZmYtMTU0OTM2MGU4NmM4XC9kZWt3YWVuLWNkZDk1YTdlLTk3ZjYtNDQ4ZC04YTM3LTRjYjQ1ZmQ4MzE2ZC5qcGciLCJ3aWR0aCI6Ijw9MTI4MCJ9XV0sImF1ZCI6WyJ1cm46c2VydmljZTppbWFnZS5vcGVyYXRpb25zIl19.H07bfXrVB7ZzfTvysDiPTgZ7T-xyN2SRui1vxivm6lI"
+    />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
@@ -502,7 +531,7 @@
           </div>
           <div class="p-4 bg-gray-700 rounded">
               <div class="text-sm text-gray-400">Market Sentiment</div>
-              <div class="text-lg ${
+              <div class="text-md ${
                 data.trend.includes("BULLISH")
                   ? "text-green-400"
                   : data.trend.includes("BEARISH")
@@ -515,7 +544,7 @@
           </div>
           <div class="p-4 bg-gray-700 rounded">
               <div class="text-sm text-gray-400">Pattern Recognition</div>
-              <div class="text-lg">${data.pattern}</div>
+              <div class="text-md">${data.pattern}</div>
               <div class="text-xs text-gray-500">Market Structure</div>
           </div>
         `;
