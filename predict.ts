@@ -83,7 +83,7 @@ function calculateMACD(prices: number[]): {
   const ema12 = calculateEMA(prices, 12);
   const ema26 = calculateEMA(prices, 26);
   const macd = ema12 - ema26;
-  const signal = calculateEMA([macd], 9);
+  const signal = calculateEMA(prices.slice(-9), 9); // Corrected signal calculation
   return { macd, signal, histogram: macd - signal };
 }
 
@@ -183,15 +183,13 @@ function identifyPricePatterns(prices: number[]): PricePattern {
   const recent = prices.slice(-10);
   const regression = linearRegression(recent.map((p, i) => [i, p]));
   const slope = regression.m;
-  // Sửa cách sử dụng kernelDensityEstimation và xử lý kết quả
-  const densityFn = kernelDensityEstimation(recent, "gaussian");
+  const densityFn = kernelDensityEstimation(recent);
   const densityValues = recent.map((p) => densityFn(p));
   const volatility = standardDeviation(recent) / mean(recent);
 
   let pattern = "UNKNOWN";
   let strength = 0;
 
-  // Sửa logic kiểm tra density
   if (Math.max(...densityValues) > 2) {
     pattern = "ACCUMULATION";
     strength = Math.min(Math.max(...densityValues) / 2, 1);
@@ -222,22 +220,17 @@ function calculateConfidence(params: {
 }): number {
   const { score, rsi, trend, pattern, volatility, macd, currentPrice } = params;
 
-  // RSI confidence (higher near extremes)
   const rsiConfidence =
     rsi > 70 || rsi < 30 ? 85 : rsi > 65 || rsi < 35 ? 75 : 60;
 
-  // Trend confidence based on strength and MACD confirmation
   const trendConfidence =
     trend.strength * (Math.sign(macd.histogram) === Math.sign(score) ? 1 : 0.5);
 
-  // Pattern confidence with volatility adjustment
   const patternConfidence = pattern.strength * (1 - volatility);
 
-  // Calculate weighted confidence
   const confidence =
     rsiConfidence * 0.3 + trendConfidence * 0.4 + patternConfidence * 0.3;
 
-  // Reduce confidence based on volatility
   return confidence * (1 - volatility);
 }
 
