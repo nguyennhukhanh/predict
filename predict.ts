@@ -12,7 +12,14 @@ import {
   geometricMean,
 } from "simple-statistics";
 
-const binance = new Binance().options({});
+const binance = new Binance().options({
+  useServerTime: true,
+  test: false,
+  verbose: false,
+  reconnect: true,
+  keepAlive: true,
+  family: 4,
+});
 
 interface PricePattern {
   pattern: string;
@@ -23,6 +30,41 @@ interface MLPrediction {
   price: number;
   probability: number;
   timeframe: string;
+}
+
+interface StatsResult {
+  volatility: number;
+  meanReturn: number;
+  momentum: number;
+  variance: number;
+  skewness: number;
+  kurtosis: number;
+  quartiles: { q1: number; q2: number; q3: number };
+  geometricMean: number;
+  harmonicMean: number;
+}
+
+interface PredictionResult {
+  symbol: string;
+  timestamps: number[];
+  prices: number[]; // Add full price history
+  currentPrice: number;
+  predictedPrice: number;
+  trend: string;
+  pattern: string;
+  confidence: number;
+  score: number;
+  analytics: {
+    technical: {
+      macd: { macd: number; signal: number; histogram: number };
+      rsi: number;
+      bollingerBands: { upper: number; middle: number; lower: number };
+    };
+    momentum: number;
+    volatility: number;
+    trend: number;
+    pattern: PricePattern;
+  };
 }
 
 // Technical indicators calculation
@@ -99,31 +141,40 @@ function normalizeValue(
   return Math.min(Math.max(value, min), max);
 }
 
-function calculateAdvancedStats(prices: number[]) {
+function calculateAdvancedStats(prices: number[]): StatsResult {
   try {
+    const returns = prices.slice(1).map((p, i) => (p - prices[i]) / prices[i]);
+    const volatility = standardDeviation(returns) * Math.sqrt(365); // Annualized volatility
+    const positivePrices = prices.filter((p) => p > 0);
+
     return {
-      variance: Math.min(variance(prices), prices[prices.length - 1] * 0.1),
-      skewness: normalizeValue(sampleSkewness(prices)),
-      kurtosis: normalizeValue(sampleKurtosis(prices)),
+      volatility: volatility * 100, // Convert to percentage
+      meanReturn: mean(returns) * 100,
+      momentum:
+        (prices[prices.length - 1] / prices[prices.length - 20] - 1) * 100,
+      variance: Math.min(variance(returns) * 100, 10), // Cap at 10%
+      skewness: normalizeValue(sampleSkewness(returns)),
+      kurtosis: normalizeValue(sampleKurtosis(returns)),
       quartiles: {
         q1: quantile(prices, 0.25),
         q2: quantile(prices, 0.5),
         q3: quantile(prices, 0.75),
       },
-      density: kernelDensityEstimation(prices, "gaussian"),
-      harmonicMean: harmonicMean(prices.filter((p) => p > 0)),
-      geometricMean: geometricMean(prices.filter((p) => p > 0)),
+      geometricMean: geometricMean(positivePrices),
+      harmonicMean: harmonicMean(positivePrices),
     };
   } catch (error) {
     console.error("Stats calculation error:", error);
     return {
+      volatility: 0,
+      meanReturn: 0,
+      momentum: 0,
       variance: 0,
       skewness: 0,
       kurtosis: 0,
       quartiles: { q1: 0, q2: 0, q3: 0 },
-      density: kernelDensityEstimation([1], "gaussian"),
-      harmonicMean: 0,
       geometricMean: 0,
+      harmonicMean: 0,
     };
   }
 }
@@ -232,168 +283,129 @@ function formatPrice(price: number, symbol: string): number {
   }
 }
 
-async function predictPrice(symbol = "BTCUSDT", interval = "1h") {
+async function predictPrice(
+  symbol = "BTCUSDT",
+  interval = "1h"
+): Promise<PredictionResult> {
   try {
-    // Validate symbol
     if (!symbol || typeof symbol !== "string") {
       throw new Error("Invalid symbol");
     }
 
-    const klines = await binance.candlesticks(symbol, interval, false, {
-      limit: 200,
-    });
-    if (!klines || klines.length === 0) {
-      throw new Error("No data available for this symbol");
-    }
-
-    const prices = klines.map((k: any) => Number(k[4]));
-    const volumes = klines.map((k: any) => Number(k[5]));
-
-    // Thêm kiểm tra giá trị hợp lệ
-    if (
-      prices.some((p: any) => !p || isNaN(p)) ||
-      volumes.some((v: any) => !v || isNaN(v))
-    ) {
-      throw new Error("Invalid price or volume data");
-    }
-
-    // Advanced Technical Analysis
-    const macd = calculateMACD(prices);
-    const rsi = calculateRSI(prices);
-    const bb = calculateBollingerBands(prices);
-    const trend = detectTrend(prices);
-    const currentPrice = prices[prices.length - 1];
-
-    const stats = calculateAdvancedStats(prices);
-    const pattern = identifyPricePatterns(prices);
-
-    // Enhanced scoring with volatility adjustment
-    let score = 0;
-    const volatility = Math.min(stats.variance / currentPrice, 0.1); // Cap at 10%
-    const momentum = Math.min(
-      Math.abs(stats.geometricMean / (stats.harmonicMean || currentPrice) - 1),
-      0.05 // Cap at 5%
-    );
-    const volatilityFactor = 1 - Math.min(volatility * 10, 0.8);
-
-    // Trend Analysis (30%)
-    score += trend.strength * 0.3 * volatilityFactor;
-
-    // Pattern Analysis (20%)
-    score += pattern.strength * 0.2 * volatilityFactor;
-
-    // RSI Analysis (20%)
-    const rsiScore =
-      rsi < 30 ? 20 : rsi > 70 ? -20 : ((50 - Math.abs(rsi - 50)) / 50) * 20;
-    score += rsiScore * volatilityFactor;
-
-    // MACD Analysis (15%)
-    const macdScore =
-      15 *
-      Math.sign(macd.histogram) *
-      Math.min(Math.abs(macd.histogram / currentPrice), 0.01) *
-      100;
-    score += macdScore * volatilityFactor;
-
-    // Volume Analysis (15%)
-    const volumeMA = mean(volumes.slice(-20));
-    const volumeScore = volumes[volumes.length - 1] > volumeMA ? 15 : -15;
-    score += volumeScore * volatilityFactor;
-
-    // Normalize score
-    score = normalizeValue(score, -100, 100);
-
-    // Calculate predicted movement with more conservative limits
-    const maxDailyMove = currentPrice * 0.05; // Max 5% move
-    const predictedMove =
-      Math.min(
-        Math.abs(volatility * (score / 100) * currentPrice),
-        maxDailyMove
-      ) *
-      (1 + momentum * 0.5); // Momentum impact reduced by 50%
-
-    const predictedPrice =
-      score >= 0
-        ? currentPrice * (1 + predictedMove / currentPrice)
-        : currentPrice * (1 - predictedMove / currentPrice);
-
-    // Calculate confidence with new function
-    const confidence = calculateConfidence({
-      score,
-      rsi,
-      trend,
-      pattern,
-      volatility,
-      macd,
-      currentPrice,
-    });
-
-    // Add Ichimoku Cloud analysis
-    const ichimoku = calculateIchimokuCloud(prices);
-    const stochRSI = calculateStochRSI(prices);
-
-    // Enhanced scoring system
-    // Volume Profile Analysis (10%)
-    const volumeProfile = calculateVolumeProfile(prices, volumes);
-    score += volumeProfile.score * 0.1;
-
-    // Market Depth Analysis (10%)
-    let depthAnalysis;
+    // Sử dụng node-binance-api để lấy candlesticks
+    let klines;
     try {
-      const depth = await binance.depth(symbol);
-      depthAnalysis = analyzeMarketDepth(depth);
-    } catch (error) {
-      console.warn("Market depth analysis failed:", error);
-      depthAnalysis = {
-        score: 0,
-        buyPressure: 0,
-        sellPressure: 0,
-        imbalance: 0,
-      };
+      klines = await binance.candlesticks(symbol, interval, false, {
+        limit: 200,
+      });
+
+      if (!Array.isArray(klines) || klines.length === 0) {
+        throw new Error("No data available for this symbol");
+      }
+    } catch (binanceError: any) {
+      console.error("Binance API error:", binanceError);
+      throw new Error(
+        `Failed to fetch data: ${binanceError.message || "API error"}`
+      );
     }
-    score += depthAnalysis.score * 0.1;
 
-    // Order Flow Analysis (15%)
-    const orderFlow = analyzeOrderFlow(prices, volumes);
-    score += orderFlow.score * 0.15;
+    // Convert dữ liệu với validation chặt chẽ
+    const prices = klines.map((k: any[], i: number) => {
+      const closePrice = parseFloat(k[4]);
+      if (isNaN(closePrice) || closePrice <= 0) {
+        throw new Error(`Invalid price at index ${i}`);
+      }
+      return closePrice;
+    });
 
-    return {
+    const volumes = klines.map((k: any[], i: number) => {
+      const volume = parseFloat(k[5]);
+      if (isNaN(volume) || volume < 0) {
+        throw new Error(`Invalid volume at index ${i}`);
+      }
+      return volume;
+    });
+
+    const timestamps = klines.map((k: any[], i: number) => {
+      const timestamp = parseInt(k[0]);
+      if (isNaN(timestamp) || timestamp <= 0) {
+        throw new Error(`Invalid timestamp at index ${i}`);
+      }
+      return timestamp;
+    });
+
+    // Calculate indicators
+    const currentPrice = prices[prices.length - 1];
+    const stats = calculateAdvancedStats(prices);
+    const trend = detectTrend(prices);
+    const pricePattern = identifyPricePatterns(prices);
+    const rsi = calculateRSI(prices);
+    const macd = calculateMACD(prices);
+    const bb = calculateBollingerBands(prices);
+
+    // Price prediction logic
+    const volatilityImpact = stats.volatility / 100;
+    const momentumImpact = stats.momentum / 100;
+    const trendImpact = trend.strength / 100;
+    const rsiImpact = (rsi - 50) / 50;
+
+    const priceChange =
+      currentPrice *
+      (volatilityImpact * 0.3 +
+        momentumImpact * 0.3 +
+        trendImpact * 0.2 +
+        rsiImpact * 0.2);
+
+    const calculatedPrice = currentPrice + priceChange;
+    const formattedCurrentPrice = formatPrice(currentPrice, symbol);
+    const formattedPredictedPrice = formatPrice(calculatedPrice, symbol);
+
+    // Calculate confidence and score
+    const confidenceScore = Math.min(
+      100,
+      (1 - Math.abs(volatilityImpact)) * 30 +
+        Math.abs(momentumImpact) * 30 +
+        trend.strength * 20 +
+        (1 - Math.abs(rsiImpact)) * 20
+    );
+
+    const totalScore = normalizeValue(
+      trendImpact * 40 +
+        momentumImpact * 30 +
+        rsiImpact * 20 +
+        volatilityImpact * 10,
+      -100,
+      100
+    );
+
+    // Prepare result
+    const result: PredictionResult = {
       symbol,
-      currentPrice: formatPrice(currentPrice, symbol),
-      predictedPrice: formatPrice(predictedPrice, symbol),
+      timestamps,
+      prices, // Add full price history
+      currentPrice: formattedCurrentPrice,
+      predictedPrice: formattedPredictedPrice,
       trend: trend.trend,
-      pattern: pattern.pattern,
-      confidence,
-      score,
+      pattern: pricePattern.pattern,
+      confidence: confidenceScore,
+      score: totalScore,
       analytics: {
-        technical: {
-          macd,
-          rsi,
-          bollingerBands: bb,
-        },
-        statistical: stats,
-        pattern,
-        trendStrength: trend.strength,
-        volatility: normalizeValue(volatility * 100, 0, 100),
-        momentum: normalizeValue(momentum * 100, 0, 100),
-        ichimoku,
-        stochRSI,
-        volumeProfile,
-        depthAnalysis,
-        orderFlow,
-        risk: calculateRiskMetrics(prices, predictedPrice, confidence),
-        signals: generateTradingSignals({
-          price: currentPrice,
-          ichimoku,
-          macd,
-          rsi: stochRSI,
-          trend,
-        }),
+        technical: { macd, rsi, bollingerBands: bb },
+        momentum: stats.momentum,
+        volatility: stats.volatility,
+        trend: trend.strength,
+        pattern: pricePattern,
       },
     };
+
+    return result;
   } catch (error: any) {
-    console.error("Prediction error:", error);
-    throw new Error(`Failed to predict price: ${error.message}`);
+    console.error("Prediction error details:", {
+      error,
+      message: error.message,
+      stack: error.stack,
+    });
+    throw new Error(error.message || "Failed to predict price");
   }
 }
 
@@ -571,12 +583,7 @@ async function main() {
       `Pattern Strength: ${result.analytics.pattern.strength.toFixed(2)}%`
     );
     console.log(`RSI: ${result.analytics.technical.rsi.toFixed(2)}`);
-    console.log(
-      `Skewness: ${result.analytics.statistical.skewness.toFixed(4)}`
-    );
-    console.log(
-      `Kurtosis: ${result.analytics.statistical.kurtosis.toFixed(4)}`
-    );
+    console.log(`Trend: ${result.analytics.trend}`);
   } catch (error: any) {
     console.error("Error in main:", error.message);
   }

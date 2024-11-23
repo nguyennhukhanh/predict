@@ -34,12 +34,20 @@
             class="w-full p-2 rounded bg-gray-800 border border-gray-700"
           >
             <option value="1m">1 minute</option>
+            <option value="3m">3 minutes</option>
             <option value="5m">5 minutes</option>
             <option value="15m">15 minutes</option>
             <option value="30m">30 minutes</option>
             <option value="1h" selected>1 hour</option>
+            <option value="2h">2 hours</option>
             <option value="4h">4 hours</option>
+            <option value="6h">6 hours</option>
+            <option value="8h">8 hours</option>
+            <option value="12h">12 hours</option>
             <option value="1d">1 day</option>
+            <option value="3d">3 days</option>
+            <option value="1w">1 week</option>
+            <option value="1M">1 month</option>
           </select>
         </div>
         <div class="flex items-end">
@@ -102,6 +110,18 @@
             },
             foreColor: "#fff",
             background: "transparent",
+            toolbar: {
+              show: true,
+              tools: {
+                download: true,
+                selection: true,
+                zoom: true,
+                zoomin: true,
+                zoomout: true,
+                pan: true,
+                reset: true,
+              },
+            },
           },
           stroke: {
             curve: "smooth",
@@ -112,9 +132,20 @@
           },
           tooltip: {
             theme: "dark",
+            x: {
+              format: "dd MMM yyyy HH:mm",
+            },
           },
           xaxis: {
             type: "datetime",
+            labels: {
+              datetimeUTC: false,
+            },
+          },
+          yaxis: {
+            labels: {
+              formatter: (value) => formatNumber(value),
+            },
           },
         };
 
@@ -158,38 +189,193 @@
       }
 
       function updateCharts(data) {
-        const timestamp = Date.now();
+        try {
+          // Format giá thành mảng dữ liệu cho biểu đồ
+          const priceData = data.timestamps.map((timestamp, i) => ({
+            x: new Date(Number(timestamp)),
+            y: Number(data.prices[i]), // Sử dụng mảng prices thay vì giá đơn lẻ
+          }));
 
-        // Update price chart
-        priceChart.updateSeries([
-          {
-            name: "Current Price",
-            data: [[timestamp, data.currentPrice]],
-          },
-          {
-            name: "Predicted Price",
-            data: [
-              [timestamp, data.currentPrice],
-              [timestamp + 3600000, data.predictedPrice],
+          // Tính toán điểm cuối cho đường dự đoán
+          const lastPoint = priceData[priceData.length - 1];
+          const predictionPoints = [
+            lastPoint,
+            {
+              x: new Date(lastPoint.x.getTime() + 3600000), // 1 giờ sau
+              y: Number(data.predictedPrice),
+            },
+          ];
+
+          // Cập nhật biểu đồ giá
+          priceChart.updateOptions({
+            chart: {
+              height: 400,
+              animations: {
+                enabled: false,
+              },
+            },
+            stroke: {
+              width: [2, 2],
+              dashArray: [0, 5],
+            },
+            colors: ["#00E396", "#FEB019"],
+            xaxis: {
+              type: "datetime",
+              labels: {
+                datetimeUTC: false,
+                style: {
+                  colors: "#fff",
+                },
+              },
+            },
+            yaxis: {
+              labels: {
+                style: {
+                  colors: "#fff",
+                },
+                formatter: (value) => formatNumber(value, data.symbol),
+              },
+              tickAmount: 6,
+            },
+            tooltip: {
+              theme: "dark",
+              x: {
+                format: "dd MMM yyyy HH:mm",
+              },
+            },
+            grid: {
+              borderColor: "#90A4AE30",
+              row: {
+                colors: ["transparent", "transparent"],
+              },
+            },
+            legend: {
+              labels: {
+                colors: "#fff",
+              },
+            },
+          });
+
+          priceChart.updateSeries([
+            {
+              name: "Historical Price",
+              data: priceData,
+            },
+            {
+              name: "Prediction",
+              data: predictionPoints,
+            },
+          ]);
+
+          // Cập nhật biểu đồ chỉ báo kỹ thuật
+          const technicalData = data.timestamps
+            .slice(-30)
+            .map((timestamp, i) => ({
+              x: new Date(Number(timestamp)),
+              RSI: data.analytics.technical.rsi,
+              Momentum: data.analytics.momentum,
+              Trend: data.analytics.trend,
+            }));
+
+          indicatorChart.updateOptions({
+            chart: {
+              height: 400,
+              animations: {
+                enabled: false,
+              },
+            },
+            stroke: {
+              width: [2, 2, 2],
+              curve: "smooth",
+            },
+            colors: ["#00E396", "#008FFB", "#FEB019"],
+            xaxis: {
+              type: "datetime",
+              labels: {
+                datetimeUTC: false,
+                style: {
+                  colors: "#fff",
+                },
+              },
+            },
+            yaxis: [
+              {
+                title: {
+                  text: "RSI",
+                  style: {
+                    color: "#00E396",
+                  },
+                },
+                min: 0,
+                max: 100,
+                labels: {
+                  style: {
+                    colors: "#fff",
+                  },
+                },
+              },
+              {
+                title: {
+                  text: "Momentum/Trend",
+                  style: {
+                    color: "#008FFB",
+                  },
+                },
+                min: -100,
+                max: 100,
+                opposite: true,
+                labels: {
+                  style: {
+                    colors: "#fff",
+                  },
+                },
+              },
             ],
-          },
-        ]);
+            tooltip: {
+              theme: "dark",
+              x: {
+                format: "dd MMM yyyy HH:mm",
+              },
+            },
+            grid: {
+              borderColor: "#90A4AE30",
+            },
+            legend: {
+              labels: {
+                colors: "#fff",
+              },
+            },
+          });
 
-        // Update indicator chart
-        indicatorChart.updateSeries([
-          {
-            name: "RSI",
-            data: [[timestamp, data.analytics.technical.rsi]],
-          },
-          {
-            name: "Momentum",
-            data: [[timestamp, data.analytics.momentum]],
-          },
-          {
-            name: "Volatility",
-            data: [[timestamp, data.analytics.volatility]],
-          },
-        ]);
+          indicatorChart.updateSeries([
+            {
+              name: "RSI",
+              type: "line",
+              data: technicalData.map((d) => ({
+                x: d.x,
+                y: d.RSI,
+              })),
+            },
+            {
+              name: "Momentum",
+              type: "line",
+              data: technicalData.map((d) => ({
+                x: d.x,
+                y: d.Momentum,
+              })),
+            },
+            {
+              name: "Trend",
+              type: "line",
+              data: technicalData.map((d) => ({
+                x: d.x,
+                y: d.Trend,
+              })),
+            },
+          ]);
+        } catch (error) {
+          console.error("Error updating charts:", error);
+        }
       }
 
       function formatNumber(num, symbol) {
@@ -226,11 +412,11 @@
                 </div>
                 <div class="p-4 bg-gray-700 rounded">
                     <div class="text-sm text-gray-400">Market Pattern</div>
-                    <div class="text-lg">${data.pattern}</div>
+                    <div class="text-md">${data.pattern}</div>
                 </div>
                 <div class="p-4 bg-gray-700 rounded">
                     <div class="text-sm text-gray-400">Trend</div>
-                    <div class="text-lg">${data.trend}</div>
+                    <div class="text-md">${data.trend}</div>
                 </div>
             `;
 
@@ -259,6 +445,89 @@
                     <div class="text-lg">${data.confidence.toFixed(2)}%</div>
                 </div>
             `;
+
+        // Update prediction results
+        document.getElementById("predictionData").innerHTML = `
+          <div class="p-4 bg-gray-700 rounded">
+              <div class="text-sm text-gray-400">Price Movement</div>
+              <div class="text-lg ${
+                data.predictedPrice > data.currentPrice
+                  ? "text-green-400"
+                  : "text-red-400"
+              }">
+                  ${(
+                    ((data.predictedPrice - data.currentPrice) /
+                      data.currentPrice) *
+                    100
+                  ).toFixed(2)}%
+              </div>
+              <div class="text-xs text-gray-500">Expected Change</div>
+          </div>
+          <div class="p-4 bg-gray-700 rounded">
+              <div class="text-sm text-gray-400">Confidence Score</div>
+              <div class="text-lg">${data.confidence.toFixed(2)}%</div>
+              <div class="text-xs text-gray-500">Prediction Accuracy</div>
+          </div>
+          <div class="p-4 bg-gray-700 rounded">
+              <div class="text-sm text-gray-400">Time Frame</div>
+              <div class="text-lg">${
+                document.getElementById("interval").value
+              }</div>
+              <div class="text-xs text-gray-500">Analysis Period</div>
+          </div>
+          <div class="p-4 bg-gray-700 rounded">
+              <div class="text-sm text-gray-400">Risk Level</div>
+              <div class="text-lg">
+                  ${
+                    data.analytics.volatility > 50
+                      ? "High"
+                      : data.analytics.volatility > 30
+                      ? "Medium"
+                      : "Low"
+                  }
+              </div>
+              <div class="text-xs text-gray-500">Based on Volatility</div>
+          </div>
+          <div class="p-4 bg-gray-700 rounded">
+              <div class="text-sm text-gray-400">Signal Strength</div>
+              <div class="text-lg">${data.score.toFixed(2)}%</div>
+              <div class="text-xs text-gray-500">Trading Signal</div>
+          </div>
+          <div class="p-4 bg-gray-700 rounded">
+              <div class="text-sm text-gray-400">Volume Profile</div>
+              <div class="text-lg">${data.analytics.pattern.strength.toFixed(
+                2
+              )}%</div>
+              <div class="text-xs text-gray-500">Market Participation</div>
+          </div>
+          <div class="p-4 bg-gray-700 rounded">
+              <div class="text-sm text-gray-400">Market Sentiment</div>
+              <div class="text-lg ${
+                data.trend.includes("BULLISH")
+                  ? "text-green-400"
+                  : data.trend.includes("BEARISH")
+                  ? "text-red-400"
+                  : "text-yellow-400"
+              }">
+                  ${data.trend}
+              </div>
+              <div class="text-xs text-gray-500">Overall Direction</div>
+          </div>
+          <div class="p-4 bg-gray-700 rounded">
+              <div class="text-sm text-gray-400">Pattern Recognition</div>
+              <div class="text-lg">${data.pattern}</div>
+              <div class="text-xs text-gray-500">Market Structure</div>
+          </div>
+        `;
+
+        // Highlight significant changes
+        const priceChange =
+          ((data.predictedPrice - data.currentPrice) / data.currentPrice) * 100;
+        if (Math.abs(priceChange) > 5) {
+          document
+            .getElementById("predictionData")
+            .firstElementChild.classList.add("animate-pulse");
+        }
       }
 
       async function updatePrediction() {
