@@ -18,4 +18,4 @@ COPY . .
 EXPOSE 1505
 
 # Command to run the app
-CMD ["bun", "app.ts"]
+CMD ["bun", "src/app.ts"]
