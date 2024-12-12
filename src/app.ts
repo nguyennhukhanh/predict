@@ -4,7 +4,7 @@ import { TimeInterval } from "./types";
 import { file } from "bun";
 
 const server = serve({
-    port: 3000,
+    port: 1505,
     async fetch(req) {
         const url = new URL(req.url);
         
