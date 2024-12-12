@@ -1,755 +1,460 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Crypto Price Predictor</title>
-    <meta
-      name="description"
-      content="Predict cryptocurrency prices using advanced analytics and machine learning."
-    />
-    <meta
-      name="keywords"
-      content="crypto, cryptocurrency, price prediction, machine learning, analytics"
-    />
-    <meta
-      property="og:image"
-      content="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/6e75e786-add4-4040-a3ff-1549360e86c8/dekwaen-cdd95a7e-97f6-448d-8a37-4cb45fd8316d.jpg/v1/fill/w_1103,h_725,q_70,strp/crypto_mythology_by_ppp597_dekwaen-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9ODQxIiwicGF0aCI6IlwvZlwvNmU3NWU3ODYtYWRkNC00MDQwLWEzZmYtMTU0OTM2MGU4NmM4XC9kZWt3YWVuLWNkZDk1YTdlLTk3ZjYtNDQ4ZC04YTM3LTRjYjQ1ZmQ4MzE2ZC5qcGciLCJ3aWR0aCI6Ijw9MTI4MCJ9XV0sImF1ZCI6WyJ1cm46c2VydmljZTppbWFnZS5vcGVyYXRpb25zIl19.H07bfXrVB7ZzfTvysDiPTgZ7T-xyN2SRui1vxivm6lI"
-    />
-    <meta property="og:title" content="Crypto Price Predictor" />
-    <meta
-      property="og:description"
-      content="Predict cryptocurrency prices using advanced analytics and machine learning."
-    />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://crypto.phimmoi1s.org/" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Crypto Price Predictor" />
-    <meta
-      name="twitter:description"
-      content="Predict cryptocurrency prices using advanced analytics and machine learning."
-    />
-    <meta
-      name="twitter:image"
-      content="https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/6e75e786-add4-4040-a3ff-1549360e86c8/dekwaen-cdd95a7e-97f6-448d-8a37-4cb45fd8316d.jpg/v1/fill/w_1103,h_725,q_70,strp/crypto_mythology_by_ppp597_dekwaen-pre.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7ImhlaWdodCI6Ijw9ODQxIiwicGF0aCI6IlwvZlwvNmU3NWU3ODYtYWRkNC00MDQwLWEzZmYtMTU0OTM2MGU4NmM4XC9kZWt3YWVuLWNkZDk1YTdlLTk3ZjYtNDQ4ZC04YTM3LTRjYjQ1ZmQ4MzE2ZC5qcGciLCJ3aWR0aCI6Ijw9MTI4MCJ9XV0sImF1ZCI6WyJ1cm46c2VydmljZTppbWFnZS5vcGVyYXRpb25zIl19.H07bfXrVB7ZzfTvysDiPTgZ7T-xyN2SRui1vxivm6lI"
-    />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Price Prediction</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
-      .chart-container {
-        min-height: 400px;
-      }
+        body {
+            background-color: #0b0e11;
+            color: #eaecef;
+        }
+
+        .chart-container {
+            background: #1e2329;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .recommendation-card {
+            background: #1e2329;
+            border: 1px solid #2c3139;
+            transition: all 0.2s ease;
+        }
+        
+        .recommendation-card:hover {
+            border-color: #f0b90b;
+        }
+
+        .input-group {
+            background: #1e2329;
+            border: 1px solid #2c3139;
+            border-radius: 4px;
+        }
+
+        input, select {
+            background: #2b3139;
+            border: 1px solid #474d57;
+            color: #eaecef;
+        }
+
+        input:focus, select:focus {
+            border-color: #f0b90b;
+            outline: none;
+        }
+
+        .btn-primary {
+            background: #f0b90b;
+            color: #1e2329;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #f8d12f;
+            transform: translateY(-1px);
+        }
+
+        /* Binance-style scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1e2329;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #474d57;
+            border-radius: 3px;
+        }
     </style>
-  </head>
-  <body class="bg-gray-900 text-white">
-    <div class="container mx-auto px-4 py-8">
-      <h1 class="text-3xl font-bold mb-8">Crypto Price Predictor</h1>
+</head>
+<body>
+    <div class="container mx-auto p-4">
+        <div class="input-group mb-6 p-4 flex flex-wrap gap-4 items-center">
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm mb-2 text-gray-400">Trading Pair</label>
+                <input type="text" id="symbol" placeholder="BTCUSDT" 
+                    class="w-full px-4 py-2 rounded" value="BTCUSDT">
+            </div>
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm mb-2 text-gray-400">Interval</label>
+                <select id="interval" class="w-full px-4 py-2 rounded">
+                  <option value="1m">1 minute</option>
+                  <option value="3m">3 minutes</option>
+                  <option value="5m">5 minutes</option>
+                  <option value="15m">15 minutes</option>
+                  <option value="30m">30 minutes</option>
+                  <option value="1h">1 hour</option>
+                  <option value="2h">2 hours</option>
+                  <option value="4h">4 hours</option>
+                  <option value="6h">6 hours</option>
+                  <option value="8h">8 hours</option>
+                  <option value="12h">12 hours</option>
+                  <option value="1d">1 day</option>
+                  <option value="3d">3 days</option>
+                  <option value="1w">1 week</option>
+                  <option value="1M">1 month</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button onclick="updateChart()" 
+                    class="btn-primary px-6 py-2 rounded">
+                    Analyze
+                </button>
+            </div>
+        </div>
+        
+        <div id="recommendation" class="recommendation-card p-6 mb-6 hidden rounded-lg">
+            <h2 class="text-xl font-bold mb-3">Trading Recommendation</h2>
+            <div id="recommendationContent" class="space-y-2">
+                <div class="flex justify-between items-center">
+                    <span class="font-semibold">Action:</span>
+                    <span id="recAction" class="px-3 py-1 rounded text-white"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="font-semibold">Confidence:</span>
+                    <span id="recConfidence"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="font-semibold">Risk Level:</span>
+                    <span id="recRisk"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="font-semibold">Suggested Amount:</span>
+                    <span id="recAmount"></span>
+                </div>
+                <div class="mt-2">
+                    <span class="font-semibold">Reason:</span>
+                    <p id="recReason" class="mt-1 text-gray-600"></p>
+                </div>
 
-      <!-- Form Controls -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div>
-          <label class="block text-sm font-medium mb-2">Symbol</label>
-          <input
-            type="text"
-            id="symbol"
-            value="BTCUSDT"
-            class="w-full p-2 rounded bg-gray-800 border border-gray-700"
-          />
+                <div class="mt-2">
+                  <span class="font-semibold">Note:</span>
+                  <p id="recReason" class="mt-1 text-gray-600">
+                    <b>Thời Điểm Mua và Chốt Lời</b>
+                    <br>Mua: Khi RSI dưới 30 và có dấu hiệu đảo chiều, xem xét mua vào.
+                    br
+                    Chốt lời: Khi RSI trên 70 và có dấu hiệu đảo chiều, xem xét bán hoặc chốt lời.</p>
+              </div>
+            </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium mb-2">Interval</label>
-          <select
-            id="interval"
-            class="w-full p-2 rounded bg-gray-800 border border-gray-700"
-          >
-            <option value="1m" selected>1 minute</option>
-            <option value="3m">3 minutes</option>
-            <option value="5m">5 minutes</option>
-            <option value="15m">15 minutes</option>
-            <option value="30m">30 minutes</option>
-            <option value="1h">1 hour</option>
-            <option value="2h">2 hours</option>
-            <option value="4h">4 hours</option>
-            <option value="6h">6 hours</option>
-            <option value="8h">8 hours</option>
-            <option value="12h">12 hours</option>
-            <option value="1d">1 day</option>
-            <option value="3d">3 days</option>
-            <option value="1w">1 week</option>
-            <option value="1M">1 month</option>
-          </select>
-        </div>
-        <div class="flex items-end">
-          <button
-            id="predict"
-            class="w-full p-2 bg-blue-600 rounded hover:bg-blue-700"
-          >
-            Predict
-          </button>
-        </div>
-      </div>
 
-      <!-- Charts -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div class="bg-gray-800 p-4 rounded-lg">
-          <h2 class="text-xl font-semibold mb-4">Price Analysis</h2>
-          <div id="priceChart" class="chart-container"></div>
+        <div id="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 hidden">
         </div>
-        <div class="bg-gray-800 p-4 rounded-lg">
-          <h2 class="text-xl font-semibold mb-4">Technical Indicators</h2>
-          <div id="indicatorChart" class="chart-container"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="chart-container p-6">
+                <div id="priceChart"></div>
+            </div>
+            <div class="chart-container p-6">
+                <div id="indicatorCharts">
+                    <div id="rsiChart"></div>
+                    <div id="macdChart"></div>
+                </div>
+            </div>
         </div>
-      </div>
-
-      <!-- Advanced Analytics -->
-      <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div class="bg-gray-800 p-4 rounded-lg">
-          <h2 class="text-xl font-semibold mb-4">Market Analysis</h2>
-          <div id="marketData" class="grid grid-cols-2 gap-4">
-            <!-- Market data will be inserted here -->
-          </div>
-        </div>
-        <div class="bg-gray-800 p-4 rounded-lg">
-          <h2 class="text-xl font-semibold mb-4">Technical Analysis</h2>
-          <div id="technicalData" class="grid grid-cols-2 gap-4">
-            <!-- Technical data will be inserted here -->
-          </div>
-        </div>
-      </div>
-
-      <!-- Prediction Results -->
-      <div id="results" class="mt-8 bg-gray-800 p-4 rounded-lg">
-        <h2 class="text-xl font-semibold mb-4">Prediction Results</h2>
-        <div id="predictionData" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <!-- Results will be inserted here -->
-        </div>
-        <div id="predictionDescription" class="mt-4 p-4 bg-gray-700 rounded">
-          <!-- Prediction description will be inserted here -->
-        </div>
-      </div>
     </div>
 
     <script>
-      let priceChart, indicatorChart;
+        let priceChart, rsiChart, macdChart;
 
-      // Initialize charts
-      function initCharts() {
-        const chartOptions = {
-          chart: {
-            type: "line",
-            animations: {
-              enabled: false,
-            },
-            foreColor: "#fff",
-            background: "transparent",
-            toolbar: {
-              show: true,
-              tools: {
-                download: true,
-                selection: true,
-                zoom: true,
-                zoomin: true,
-                zoomout: true,
-                pan: true,
-                reset: true,
-              },
-            },
-          },
-          stroke: {
-            curve: "smooth",
-            width: 2,
-          },
-          grid: {
-            borderColor: "#404040",
-          },
-          tooltip: {
-            theme: "dark",
-            x: {
-              format: "dd MMM yyyy HH:mm",
-            },
-          },
-          xaxis: {
-            type: "datetime",
-            labels: {
-              datetimeUTC: false,
-            },
-          },
-          yaxis: {
-            labels: {
-              formatter: (value) => formatNumber(value),
-            },
-          },
-        };
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.classList.remove('hidden');
+            setTimeout(() => errorDiv.classList.add('hidden'), 5000);
+        }
 
-        priceChart = new ApexCharts(document.querySelector("#priceChart"), {
-          ...chartOptions,
-          series: [
-            {
-              name: "Price",
-              data: [],
-            },
-            {
-              name: "Predicted",
-              data: [],
-            },
-          ],
+        function initCharts() {
+            const commonOptions = {
+                chart: {
+                    type: 'line',
+                    animations: {
+                        enabled: false
+                    },
+                    zoom: {
+                        enabled: true
+                    },
+                    background: '#1e2329',
+                    foreColor: '#eaecef'
+                },
+                dataLabels: {
+                    enabled: false
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 2
+                },
+                markers: {
+                    size: 0
+                },
+                xaxis: {
+                    type: 'datetime',
+                    labels: {
+                        datetimeUTC: false
+                    }
+                },
+                tooltip: {
+                    x: {
+                        format: 'dd MMM yyyy HH:mm:ss'
+                    }
+                },
+                theme: {
+                    mode: 'dark',
+                    palette: 'palette1'
+                },
+                colors: [
+                    '#00C176', // Actual - Green
+                    '#848E9C', // Historical - Gray
+                    '#F6465D', // Prediction - Red
+                    '#F0B90B', // SMA - Binance Yellow
+                    '#3375BB'  // EMA - Blue
+                ],
+                stroke: {
+                    curve: 'smooth',
+                    width: [2, 1, 2, 1, 1]
+                },
+                markers: {
+                    size: [0, 0, 4, 0, 0],
+                    strokeWidth: 2,
+                    hover: {
+                        size: 6
+                    }
+                },
+                grid: {
+                    borderColor: '#2c3139',
+                    xaxis: {
+                        lines: {
+                            show: true,
+                            color: '#2c3139'
+                        }
+                    },
+                    yaxis: {
+                        lines: {
+                            show: true,
+                            color: '#2c3139'
+                        }
+                    }
+                }
+            };
+
+            const priceOptions = {
+                ...commonOptions,
+                chart: {
+                    ...commonOptions.chart,
+                    height: 500,
+                    id: 'price',
+                    toolbar: {
+                        show: true,
+                        tools: {
+                            download: true,
+                            selection: true,
+                            zoom: true,
+                            zoomin: true,
+                            zoomout: true,
+                            pan: true,
+                            reset: true
+                        }
+                    }
+                },
+                title: {
+                    text: 'Price Prediction',
+                    align: 'center'
+                },
+                yaxis: {
+                    title: {
+                        text: 'Price'
+                    },
+                    labels: {
+                        formatter: (value) => value.toFixed(8)
+                    }
+                },
+                series: [{
+                    name: 'Actual',
+                    data: []
+                }, {
+                    name: 'Historical',
+                    data: []
+                }, {
+                    name: 'Prediction',
+                    data: []
+                }, {
+                    name: 'SMA',
+                    data: []
+                }, {
+                    name: 'EMA',
+                    data: []
+                }]
+            };
+
+            // Fix RSI data updating
+            const rsiOptions = {
+                ...commonOptions,
+                chart: {
+                    ...commonOptions.chart,
+                    height: 200,
+                    id: 'rsi',
+                    toolbar: {
+                        show: false
+                    }
+                },
+                title: {
+                    text: 'RSI Indicator',
+                    align: 'center'
+                },
+                yaxis: {
+                    title: {
+                        text: 'RSI'
+                    },
+                    min: 0,
+                    max: 100,
+                    tickAmount: 4
+                },
+                series: [{
+                    name: 'RSI',
+                    data: []
+                }],
+                annotations: {
+                    yaxis: [
+                        {
+                            y: 70,
+                            borderColor: '#F6465D',
+                            label: {
+                                text: 'Overbought',
+                                style: { color: '#F6465D' }
+                            }
+                        },
+                        {
+                            y: 30,
+                            borderColor: '#00C176',
+                            label: {
+                                text: 'Oversold',
+                                style: { color: '#00C176' }
+                            }
+                        }
+                    ]
+                }
+            };
+
+            priceChart = new ApexCharts(document.querySelector("#priceChart"), priceOptions);
+            rsiChart = new ApexCharts(document.querySelector("#rsiChart"), rsiOptions);
+
+            priceChart.render();
+            rsiChart.render();
+        }
+
+        function updateRecommendation(recommendation) {
+            const recDiv = document.getElementById('recommendation');
+            if (!recommendation) {
+                recDiv.classList.add('hidden');
+                return;
+            }
+
+            recDiv.classList.remove('hidden');
+            
+            const actionSpan = document.getElementById('recAction');
+            actionSpan.textContent = recommendation.action;
+            actionSpan.className = 'px-3 py-1 rounded text-white ' + 
+                (recommendation.action === 'BUY' ? 'bg-green-500' : 
+                 recommendation.action === 'SELL' ? 'bg-red-500' : 
+                 'bg-gray-500');
+
+            document.getElementById('recConfidence').textContent = `${recommendation.confidence}%`;
+            document.getElementById('recRisk').textContent = recommendation.riskLevel;
+            document.getElementById('recAmount').textContent = recommendation.suggestedAmount.toFixed(8);
+            document.getElementById('recReason').textContent = recommendation.reason;
+        }
+
+        async function updateChart() {
+            const symbol = document.getElementById('symbol').value || 'BTCUSDT';
+            const interval = document.getElementById('interval').value;
+
+            try {
+                const response = await fetch(`/predict/${symbol}/${interval}`);
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // Tách riêng điểm dự đoán cuối cùng
+                const lastPredicted = data.prices.predicted[data.prices.predicted.length - 1];
+                const historicalPredicted = data.prices.predicted.slice(0, -1);
+
+                const priceSeries = [
+                    {
+                        name: 'Actual',
+                        data: data.prices.actual
+                    },
+                    {
+                        name: 'Historical',
+                        data: historicalPredicted,
+                        color: '#999999'
+                    },
+                    {
+                        name: 'Prediction',
+                        data: [data.prices.actual[data.prices.actual.length - 1], lastPredicted],
+                        color: '#ff0000',
+                        dashArray: 5
+                    },
+                    {
+                        name: 'SMA',
+                        data: data.prices.sma
+                    }
+                ];
+
+                // Fix RSI data updating
+                const rsiData = data.indicators.rsi.map(point => ({
+                    x: point.x,
+                    y: point.y
+                }));
+
+                const rsiSeries = [{
+                    name: 'RSI',
+                    data: rsiData
+                }];
+
+                await Promise.all([
+                    priceChart.updateSeries(priceSeries),
+                    rsiChart.updateSeries(rsiSeries)
+                ]);
+
+                // Update recommendation directly from the response
+                if (data.lastRecommendation) {
+                    updateRecommendation(data.lastRecommendation);
+                } else {
+                    updateRecommendation(null);
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                showError(error.message);
+                updateRecommendation(null);
+                
+                await Promise.all([
+                    priceChart.updateSeries([{ name: 'Actual', data: [] }]),
+                    rsiChart.updateSeries([{ name: 'RSI', data: [] }])
+                ]);
+            }
+        }
+
+        function updateChartStyles() {
+            document.querySelectorAll('.apexcharts-canvas').forEach(chart => {
+                chart.style.transition = 'all 0.3s ease';
+            });
+        }
+
+        // Initialize charts on load
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            updateChart();
         });
-
-        indicatorChart = new ApexCharts(
-          document.querySelector("#indicatorChart"),
-          {
-            ...chartOptions,
-            series: [
-              {
-                name: "RSI",
-                data: [],
-              },
-              {
-                name: "Momentum",
-                data: [],
-              },
-              {
-                name: "Volatility",
-                data: [],
-              },
-            ],
-          }
-        );
-
-        priceChart.render();
-        indicatorChart.render();
-      }
-
-      function updateCharts(data) {
-        try {
-          // Format giá thành mảng dữ liệu cho biểu đồ
-          const priceData = data.timestamps.map((timestamp, i) => ({
-            x: new Date(Number(timestamp)),
-            y: Number(data.prices[i]), // Sử dụng mảng prices thay vì giá đơn lẻ
-          }));
-
-          // Tính toán điểm cuối cho đường dự đoán
-          const lastPoint = priceData[priceData.length - 1];
-          const predictionPoints = [
-            lastPoint,
-            {
-              x: new Date(lastPoint.x.getTime() + 3600000), // 1 giờ sau
-              y: Number(data.predictedPrice),
-            },
-          ];
-
-          // Cập nhật biểu đồ giá
-          priceChart.updateOptions({
-            chart: {
-              height: 400,
-              animations: {
-                enabled: false,
-              },
-            },
-            stroke: {
-              width: [2, 2],
-              dashArray: [0, 5],
-            },
-            colors: ["#00E396", "#FEB019"],
-            xaxis: {
-              type: "datetime",
-              labels: {
-                datetimeUTC: false,
-                style: {
-                  colors: "#fff",
-                },
-              },
-            },
-            yaxis: {
-              labels: {
-                style: {
-                  colors: "#fff",
-                },
-                formatter: (value) => formatNumber(value, data.symbol),
-              },
-              tickAmount: 6,
-            },
-            tooltip: {
-              theme: "dark",
-              x: {
-                format: "dd MMM yyyy HH:mm",
-              },
-            },
-            grid: {
-              borderColor: "#90A4AE30",
-              row: {
-                colors: ["transparent", "transparent"],
-              },
-            },
-            legend: {
-              labels: {
-                colors: "#fff",
-              },
-            },
-          });
-
-          priceChart.updateSeries([
-            {
-              name: "Historical Price",
-              data: priceData,
-            },
-            {
-              name: "Prediction",
-              data: predictionPoints,
-            },
-          ]);
-
-          // Cập nhật biểu đồ chỉ báo kỹ thuật
-          const technicalData = data.timestamps
-            .slice(-30)
-            .map((timestamp, i) => ({
-              x: new Date(Number(timestamp)),
-              RSI: data.analytics.technical.rsi,
-              Momentum: data.analytics.momentum,
-              Trend: data.analytics.trend,
-            }));
-
-          indicatorChart.updateOptions({
-            chart: {
-              height: 400,
-              animations: {
-                enabled: false,
-              },
-            },
-            stroke: {
-              width: [2, 2, 2],
-              curve: "smooth",
-            },
-            colors: ["#00E396", "#008FFB", "#FEB019"],
-            xaxis: {
-              type: "datetime",
-              labels: {
-                datetimeUTC: false,
-                style: {
-                  colors: "#fff",
-                },
-              },
-            },
-            yaxis: [
-              {
-                title: {
-                  text: "RSI",
-                  style: {
-                    color: "#00E396",
-                  },
-                },
-                min: 0,
-                max: 100,
-                labels: {
-                  style: {
-                    colors: "#fff",
-                  },
-                },
-              },
-              {
-                title: {
-                  text: "Momentum/Trend",
-                  style: {
-                    color: "#008FFB",
-                  },
-                },
-                min: -100,
-                max: 100,
-                opposite: true,
-                labels: {
-                  style: {
-                    colors: "#fff",
-                  },
-                },
-              },
-            ],
-            tooltip: {
-              theme: "dark",
-              x: {
-                format: "dd MMM yyyy HH:mm",
-              },
-            },
-            grid: {
-              borderColor: "#90A4AE30",
-            },
-            legend: {
-              labels: {
-                colors: "#fff",
-              },
-            },
-          });
-
-          indicatorChart.updateSeries([
-            {
-              name: "RSI",
-              type: "line",
-              data: technicalData.map((d) => ({
-                x: d.x,
-                y: d.RSI,
-              })),
-            },
-            {
-              name: "Momentum",
-              type: "line",
-              data: technicalData.map((d) => ({
-                x: d.x,
-                y: d.Momentum,
-              })),
-            },
-            {
-              name: "Trend",
-              type: "line",
-              data: technicalData.map((d) => ({
-                x: d.x,
-                y: d.Trend,
-              })),
-            },
-          ]);
-        } catch (error) {
-          console.error("Error updating charts:", error);
-        }
-      }
-
-      function formatNumber(num, symbol) {
-        if (!num) return "0";
-
-        // Xử lý hiển thị theo loại coin
-        if (symbol.includes("SHIB") || symbol.includes("DOGE") || num < 0.01) {
-          return num.toPrecision(8);
-        } else if (num < 1) {
-          return num.toPrecision(6);
-        } else if (num < 100) {
-          return num.toPrecision(8);
-        } else {
-          return num.toPrecision(10);
-        }
-      }
-
-      function updateAnalytics(data) {
-        // Update market analysis
-        document.getElementById("marketData").innerHTML = `
-                <div class="p-4 bg-gray-700 rounded">
-                    <div class="text-sm text-gray-400">Current Price</div>
-                    <div class="text-lg">${formatNumber(
-                      data.currentPrice,
-                      data.symbol
-                    )}</div>
-                </div>
-                <div class="p-4 bg-gray-700 rounded">
-                    <div class="text-sm text-gray-400">Predicted Price</div>
-                    <div class="text-lg">${formatNumber(
-                      data.predictedPrice,
-                      data.symbol
-                    )}</div>
-                </div>
-                <div class="p-4 bg-gray-700 rounded">
-                    <div class="text-sm text-gray-400">Market Pattern</div>
-                    <div class="text-md">${data.pattern}</div>
-                </div>
-                <div class="p-4 bg-gray-700 rounded">
-                    <div class="text-sm text-gray-400">Trend</div>
-                    <div class="text-md">${data.trend}</div>
-                </div>
-            `;
-
-        // Update technical analysis
-        document.getElementById("technicalData").innerHTML = `
-                <div class="p-4 bg-gray-700 rounded">
-                    <div class="text-sm text-gray-400">RSI</div>
-                    <div class="text-lg">${data.analytics.technical.rsi.toFixed(
-                      2
-                    )}</div>
-                </div>
-                <div class="p-4 bg-gray-700 rounded">
-                    <div class="text-sm text-gray-400">Momentum</div>
-                    <div class="text-lg">${data.analytics.momentum.toFixed(
-                      2
-                    )}%</div>
-                </div>
-                <div class="p-4 bg-gray-700 rounded">
-                    <div class="text-sm text-gray-400">Volatility</div>
-                    <div class="text-lg">${data.analytics.volatility.toFixed(
-                      2
-                    )}%</div>
-                </div>
-                <div class="p-4 bg-gray-700 rounded">
-                    <div class="text-sm text-gray-400">Confidence</div>
-                    <div class="text-lg">${data.confidence.toFixed(2)}%</div>
-                </div>
-            `;
-
-        // Update prediction results
-        document.getElementById("predictionData").innerHTML = `
-          <div class="p-4 bg-gray-700 rounded">
-              <div class="text-sm text-gray-400">Price Movement</div>
-              <div class="text-lg ${
-                data.predictedPrice > data.currentPrice
-                  ? "text-green-400"
-                  : "text-red-400"
-              }">
-                  ${(
-                    ((data.predictedPrice - data.currentPrice) /
-                      data.currentPrice) *
-                    100
-                  ).toFixed(2)}%
-              </div>
-              <div class="text-xs text-gray-500">Expected Change</div>
-          </div>
-          <div class="p-4 bg-gray-700 rounded">
-              <div class="text-sm text-gray-400">Confidence Score</div>
-              <div class="text-lg">${data.confidence.toFixed(2)}%</div>
-              <div class="text-xs text-gray-500">Prediction Accuracy</div>
-          </div>
-          <div class="p-4 bg-gray-700 rounded">
-              <div class="text-sm text-gray-400">Time Frame</div>
-              <div class="text-lg">${
-                document.getElementById("interval").value
-              }</div>
-              <div class="text-xs text-gray-500">Analysis Period</div>
-          </div>
-          <div class="p-4 bg-gray-700 rounded">
-              <div class="text-sm text-gray-400">Risk Level</div>
-              <div class="text-lg">
-                  ${
-                    data.analytics.volatility > 50
-                      ? "High"
-                      : data.analytics.volatility > 30
-                      ? "Medium"
-                      : "Low"
-                  }
-              </div>
-              <div class="text-xs text-gray-500">Based on Volatility</div>
-          </div>
-          <div class="p-4 bg-gray-700 rounded">
-              <div class="text-sm text-gray-400">Signal Strength</div>
-              <div class="text-lg">${data.score.toFixed(2)}%</div>
-              <div class="text-xs text-gray-500">Trading Signal</div>
-          </div>
-          <div class="p-4 bg-gray-700 rounded">
-              <div class="text-sm text-gray-400">Volume Profile</div>
-              <div class="text-lg">${data.analytics.pattern.strength.toFixed(
-                2
-              )}%</div>
-              <div class="text-xs text-gray-500">Market Participation</div>
-          </div>
-          <div class="p-4 bg-gray-700 rounded">
-              <div class="text-sm text-gray-400">Market Sentiment</div>
-              <div class="text-md ${
-                data.trend.includes("BULLISH")
-                  ? "text-green-400"
-                  : data.trend.includes("BEARISH")
-                  ? "text-red-400"
-                  : "text-yellow-400"
-              }">
-                  ${data.trend}
-              </div>
-              <div class="text-xs text-gray-500">Overall Direction</div>
-          </div>
-          <div class="p-4 bg-gray-700 rounded">
-              <div class="text-sm text-gray-400">Pattern Recognition</div>
-              <div class="text-md">${data.pattern}</div>
-              <div class="text-xs text-gray-500">Market Structure</div>
-          </div>
-        `;
-
-        // Update prediction description
-        const description = generatePredictionDescription(data);
-        document.getElementById("predictionDescription").innerHTML = `
-          <div class="text-sm text-gray-400">Prediction Description</div>
-          <div class="text-md">${description}</div>
-        `;
-
-        // Highlight significant changes
-        const priceChange =
-          ((data.predictedPrice - data.currentPrice) / data.currentPrice) * 100;
-        if (Math.abs(priceChange) > 5) {
-          document
-            .getElementById("predictionData")
-            .firstElementChild.classList.add("animate-pulse");
-        }
-      }
-
-      function generatePredictionDescription(data) {
-        const priceChange =
-          ((data.predictedPrice - data.currentPrice) / data.currentPrice) * 100;
-        let description = "";
-
-        // Phân tích tổng quan thị trường
-        description += `<strong>Phân tích tổng quan:</strong><br>`;
-        description += `• ${
-          data.symbol
-        } hiện đang giao dịch ở mức ${data.currentPrice.toFixed(2)} USD${
-          data.trend.includes("BULLISH")
-            ? ", đang trong xu hướng tăng"
-            : data.trend.includes("BEARISH")
-            ? ", đang trong xu hướng giảm"
-            : ", đang trong giai đoạn tích lũy"
-        }<br>`;
-        description += `• Dự báo giá: ${data.predictedPrice.toFixed(2)} USD (${
-          priceChange > 0 ? "+" : ""
-        }${priceChange.toFixed(2)}%) trong ${
-          document.getElementById("interval").value
-        } tới<br>`;
-        description += `• Độ tin cậy: ${data.confidence.toFixed(2)}% - ${
-          data.confidence > 75
-            ? "Tín hiệu rất mạnh"
-            : data.confidence > 60
-            ? "Tín hiệu đáng tin cậy"
-            : data.confidence > 45
-            ? "Cần thêm xác nhận"
-            : "Tín hiệu yếu"
-        }<br><br>`;
-
-        // Phân tích kỹ thuật chuyên sâu
-        description += `<strong>Phân tích chỉ báo kỹ thuật:</strong><br><br>`;
-
-        // 1. Phân tích RSI (Relative Strength Index - Chỉ báo sức mạnh tương đối)
-        description += `<strong>1. Chỉ báo RSI (${data.analytics.technical.rsi.toFixed(
-          2
-        )}):</strong><br>`;
-        description += `• Ý nghĩa: Đo lường tốc độ và mức độ thay đổi giá, xác định vùng quá mua/quá bán<br>`;
-        description += `• Phân tích: ${
-          data.analytics.technical.rsi > 80
-            ? "VÙNG QUÁ MUA MẠNH (>80) - Rủi ro điều chỉnh giảm rất cao, nên chốt lời dần"
-            : data.analytics.technical.rsi > 70
-            ? "VÙNG QUÁ MUA (>70) - Cảnh báo khả năng điều chỉnh, cân nhắc chốt lời"
-            : data.analytics.technical.rsi < 20
-            ? "VÙNG QUÁ BÁN MẠNH (<20) - Cơ hội tích lũy tốt, có thể xuất hiện đáy"
-            : data.analytics.technical.rsi < 30
-            ? "VÙNG QUÁ BÁN (<30) - Vùng tích lũy tiềm năng, cân nhắc mua vào"
-            : data.analytics.technical.rsi > 60
-            ? "VÙNG TĂNG ĐIỂM (>60) - Động lượng tăng đang mạnh, xu hướng tích cực"
-            : data.analytics.technical.rsi < 40
-            ? "VÙNG GIẢM ĐIỂM (<40) - Động lượng giảm đang mạnh, thận trọng"
-            : "VÙNG TRUNG TÍNH (40-60) - Thị trường đang cân bằng, chờ tín hiệu breakout"
-        }<br><br>`;
-
-        // 2. Phân tích MACD (Moving Average Convergence Divergence)
-        const macd = data.analytics.technical.macd;
-        description += `<strong>2. Chỉ báo MACD:</strong><br>`;
-        description += `• Ý nghĩa: Kết hợp các đường trung bình động để xác định xu hướng và điểm chuyển xu hướng<br>`;
-        description += `• Thông số: MACD (${macd.macd.toFixed(
-          2
-        )}) | Signal (${macd.signal.toFixed(
-          2
-        )}) | Histogram (${macd.histogram.toFixed(2)})<br>`;
-        description += `• Phân tích: ${
-          macd.histogram > 0 && macd.macd > macd.signal
-            ? "TÍCH CỰC MẠNH - MACD vượt Signal và Histogram dương, xác nhận xu hướng tăng đang mạnh"
-            : macd.histogram > 0
-            ? "TÍCH CỰC - Histogram dương cho thấy động lượng tăng đang chiếm ưu thế"
-            : macd.histogram < 0 && macd.macd < macd.signal
-            ? "TIÊU CỰC MẠNH - MACD dưới Signal và Histogram âm, xác nhận xu hướng giảm đang mạnh"
-            : "TIÊU CỰC - Histogram âm cho thấy động lượng giảm đang chiếm ưu thế"
-        }<br><br>`;
-
-        // 3. Phân tích Momentum (Động lượng)
-        description += `<strong>3. Chỉ báo Momentum (${data.analytics.momentum.toFixed(
-          2
-        )}%):</strong><br>`;
-        description += `• Ý nghĩa: Đo lường tốc độ thay đổi giá, xác định độ mạnh của xu hướng<br>`;
-        description += `• Phân tích: ${
-          Math.abs(data.analytics.momentum) > 50
-            ? "ĐỘNG LƯỢNG CỰC MẠNH (>50%) - Xu hướng đang rất mạnh và có thể tiếp tục"
-            : Math.abs(data.analytics.momentum) > 30
-            ? "ĐỘNG LƯỢNG MẠNH (30-50%) - Xu hướng đang có độ tin cậy cao"
-            : Math.abs(data.analytics.momentum) > 15
-            ? "ĐỘNG LƯỢNG TRUNG BÌNH (15-30%) - Xu hướng đang phát triển"
-            : "ĐỘNG LƯỢNG YẾU (<15%) - Xu hướng không rõ ràng hoặc đang suy yếu"
-        }<br>`;
-        description += `• Hướng xu hướng: ${
-          data.analytics.momentum > 0
-            ? "🔼 TĂNG - Động lượng tăng điểm đang chiếm ưu thế"
-            : "🔽 GIẢM - Động lượng giảm điểm đang chiếm ưu thế"
-        }<br>`;
-
-        // Phân tích mô hình giá
-        description += `<br><strong>Phân tích mô hình giá:</strong><br>`;
-        description += `• Mô hình hiện tại: ${
-          data.pattern === "ACCUMULATION"
-            ? "Tích lũy - Giai đoạn hình thành đáy"
-            : data.pattern === "BREAKOUT_UP"
-            ? "Bứt phá tăng - Có thể bắt đầu xu hướng mới"
-            : data.pattern === "BREAKOUT_DOWN"
-            ? "Bứt phá giảm - Cảnh báo thị trường yếu"
-            : data.pattern === "CONSOLIDATION"
-            ? "Tích lũy ngang - Chờ breakout"
-            : "Chưa hình thành mô hình rõ ràng"
-        }<br>`;
-
-        // Phân tích rủi ro
-        description += `<br><strong>Đánh giá rủi ro:</strong><br>`;
-        description += `• Độ biến động: ${data.analytics.volatility.toFixed(
-          2
-        )}% - ${
-          data.analytics.volatility > 50
-            ? "Cực kỳ cao, nên giảm margin"
-            : data.analytics.volatility > 30
-            ? "Cao, cân nhắc giảm khối lượng"
-            : data.analytics.volatility > 15
-            ? "Trung bình"
-            : "Thấp, có thể tăng khối lượng"
-        }<br>`;
-
-        // Khuyến nghị giao dịch
-        description += `<br><strong>Khuyến nghị giao dịch:</strong><br>`;
-        description += `• ${
-          data.confidence > 70 && priceChange > 0
-            ? "💹 Tín hiệu MUA mạnh"
-            : data.confidence > 70 && priceChange < 0
-            ? "🔻 Tín hiệu BÁN mạnh"
-            : data.confidence > 50 && priceChange > 0
-            ? "📈 Có thể MUA với khối lượng vừa phải"
-            : data.confidence > 50 && priceChange < 0
-            ? "📉 Có thể BÁN với khối lượng vừa phải"
-            : "⚖️ Nên đứng ngoài thị trường và chờ tín hiệu rõ ràng hơn"
-        }<br>`;
-
-        // Điểm cần chú ý
-        description += `• Điểm cần chú ý: ${
-          data.analytics.volatility > 40
-            ? "Nên đặt stoploss chặt chẽ do biến động cao"
-            : data.analytics.technical.rsi > 70 ||
-              data.analytics.technical.rsi < 30
-            ? "Thị trường đang ở vùng cực đoan"
-            : data.confidence < 50
-            ? "Tín hiệu chưa đủ mạnh, nên chờ thêm xác nhận"
-            : "Có thể giao dịch theo trend với quản lý rủi ro phù hợp"
-        }`;
-
-        return description;
-      }
-
-      async function updatePrediction() {
-        const symbol = document.getElementById("symbol").value;
-        const interval = document.getElementById("interval").value;
-
-        try {
-          const response = await fetch(
-            `/api/predict?symbol=${symbol}&interval=${interval}`
-          );
-          const data = await response.json();
-
-          if (data.error) {
-            throw new Error(data.error);
-          }
-
-          updateCharts(data);
-          updateAnalytics(data);
-        } catch (error) {
-          console.error("Prediction error:", error);
-          alert("Error getting prediction: " + error.message);
-        }
-      }
-
-      // Initialize
-      document.addEventListener("DOMContentLoaded", () => {
-        initCharts();
-        document
-          .getElementById("predict")
-          .addEventListener("click", updatePrediction);
-        updatePrediction(); // Initial prediction
-      });
     </script>
-  </body>
+</body>
 </html>
