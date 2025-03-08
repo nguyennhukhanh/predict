@@ -1,44 +1,70 @@
-export enum TimeInterval {
-  ONE_MINUTE = '1m',
-  THREE_MINUTES = '3m',
-  FIVE_MINUTES = '5m',
-  FIFTEEN_MINUTES = '15m',
-  THIRTY_MINUTES = '30m',
-  ONE_HOUR = '1h',
-  TWO_HOURS = '2h',
-  FOUR_HOURS = '4h',
-  SIX_HOURS = '6h',
-  EIGHT_HOURS = '8h',
-  TWELVE_HOURS = '12h',
-  ONE_DAY = '1d',
-  THREE_DAYS = '3d',
-  ONE_WEEK = '1w',
-  ONE_MONTH = '1M'
+export interface OHLCV {
+  time: number;
+  open: number;
+  high: number;
+  close: number;
+  low: number;
+  volume: number;
 }
 
-export interface TradeRecommendation {
-  action: 'BUY' | 'SELL' | 'HOLD';
-  confidence: number; // 0-100%
-  reason: string;
-  suggestedAmount: number;
-  riskLevel: 'LOW' | 'MEDIUM' | 'HIGH';
+export interface MarketData {
+  symbol: string;
+  timeframe: string;
+  candles: OHLCV[];
 }
 
-export interface TechnicalIndicators {
-  sma: number;
-  ema: number;
-  rsi: number;
-  macd: {
-    macd: number;
-    signal: number;
-    histogram: number;
-  };
+export interface Indicator {
+  name: string;
+  value: number | number[];
+  color?: string;
 }
 
 export interface PredictionResult {
+  symbol: string;
+  timeframe: string;
   timestamp: number;
-  actual: number;
-  predicted: number;
-  indicators: TechnicalIndicators;
-  recommendation?: TradeRecommendation;
+  currentPrice: number;
+  prediction: {
+    direction: 'long' | 'short' | 'neutral';
+    confidence: number;
+    targetPrice: number;
+    stopLoss: number;
+    indicators: Indicator[];
+  };
+  historicalAccuracy?: number;
+}
+
+export interface TradingStrategy {
+  id: string;
+  name: string;
+  description: string;
+  timeframes: string[];
+  indicators: string[];
+  execute(data: MarketData): PredictionResult;
+}
+
+export interface BacktestResult {
+  strategy: string;
+  symbol: string;
+  timeframe: string;
+  startDate: string;
+  endDate: string;
+  totalTrades: number;
+  winRate: number;
+  profitFactor: number;
+  maxDrawdown: number;
+  trades: {
+    entry: {
+      timestamp: number;
+      price: number;
+      direction: 'long' | 'short';
+    };
+    exit?: {
+      timestamp: number;
+      price: number;
+      reason: 'target' | 'stop' | 'signal';
+    };
+    profitLoss?: number;
+    profitLossPercent?: number;
+  }[];
 }

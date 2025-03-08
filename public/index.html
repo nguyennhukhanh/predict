@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Price Prediction</title>
+    <title>Crypto Quant Trading</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
     <style>
@@ -70,391 +70,205 @@
             background: #474d57;
             border-radius: 3px;
         }
+        
+        .badge-long {
+            background-color: #26a69a;
+            color: white;
+        }
+        
+        .badge-short {
+            background-color: #ef5350;
+            color: white;
+        }
+        
+        .badge-neutral {
+            background-color: #787b86;
+            color: white;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(240, 185, 11, 0.3);
+            border-radius: 50%;
+            border-top-color: #f0b90b;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
-<body>
-    <div class="container mx-auto p-4">
-        <div class="input-group mb-6 p-4 flex flex-wrap gap-4 items-center">
-            <div class="flex-1 min-w-[200px]">
-                <label class="block text-sm mb-2 text-gray-400">Trading Pair</label>
-                <input type="text" id="symbol" placeholder="BTCUSDT" 
-                    class="w-full px-4 py-2 rounded" value="BTCUSDT">
+<body class="min-h-screen">
+    <header class="py-4 px-6 border-b border-[#2c3139]">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center">
+                <h1 class="text-2xl font-bold text-[#f0b90b] mr-4">Quant Trading</h1>
+                <div class="hidden md:flex space-x-4 text-sm">
+                    <a href="#" class="hover:text-[#f0b90b] transition-colors">Dashboard</a>
+                    <a href="#" class="hover:text-[#f0b90b] transition-colors">Strategies</a>
+                    <a href="#" class="hover:text-[#f0b90b] transition-colors">Backtest</a>
+                    <a href="#" class="hover:text-[#f0b90b] transition-colors">Documentation</a>
+                </div>
             </div>
-            <div class="flex-1 min-w-[200px]">
-                <label class="block text-sm mb-2 text-gray-400">Interval</label>
-                <select id="interval" class="w-full px-4 py-2 rounded">
-                  <option value="1m">1 minute</option>
-                  <option value="3m">3 minutes</option>
-                  <option value="5m">5 minutes</option>
-                  <option value="15m">15 minutes</option>
-                  <option value="30m">30 minutes</option>
-                  <option value="1h">1 hour</option>
-                  <option value="2h">2 hours</option>
-                  <option value="4h">4 hours</option>
-                  <option value="6h">6 hours</option>
-                  <option value="8h">8 hours</option>
-                  <option value="12h">12 hours</option>
-                  <option value="1d">1 day</option>
-                  <option value="3d">3 days</option>
-                  <option value="1w">1 week</option>
-                  <option value="1M">1 month</option>
-                </select>
+            <div class="flex items-center space-x-4">
+                <span class="px-2 py-1 bg-[#2c3139] rounded text-xs text-[#f0b90b]" id="server-status">Server: Connected</span>
             </div>
-            <div class="flex items-end">
-                <button onclick="updateChart()" 
-                    class="btn-primary px-6 py-2 rounded">
-                    Analyze
-                </button>
+        </div>
+    </header>
+    
+    <main class="container mx-auto p-6">
+        <!-- Strategy Selection Form -->
+        <div class="mb-8">
+            <div class="p-6 bg-[#1e2329] rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-4 text-[#f0b90b]">Trading Signal Generator</h2>
+                <form id="prediction-form" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block mb-2 text-sm">Symbol</label>
+                        <input type="text" id="symbol" class="w-full px-4 py-2 rounded" value="BTCUSDT" placeholder="BTCUSDT">
+                    </div>
+                    <div>
+                        <label class="block mb-2 text-sm">Timeframe</label>
+                        <select id="timeframe" class="w-full px-4 py-2 rounded">
+                            <option value="15m">15 Minutes</option>
+                            <option value="30m">30 Minutes</option>
+                            <option value="1h" selected>1 Hour</option>
+                            <option value="4h">4 Hours</option>
+                            <option value="1d">1 Day</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-2 text-sm">Strategy</label>
+                        <select id="strategy" class="w-full px-4 py-2 rounded">
+                            <option value="trend-following" selected>Trend Following</option>
+                            <option value="mean-reversion">Mean Reversion</option>
+                        </select>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full btn-primary px-4 py-2 rounded">
+                            Generate Signal
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
         
-        <div id="recommendation" class="recommendation-card p-6 mb-6 hidden rounded-lg">
-            <h2 class="text-xl font-bold mb-3">Trading Recommendation</h2>
-            <div id="recommendationContent" class="space-y-2">
-                <div class="flex justify-between items-center">
-                    <span class="font-semibold">Action:</span>
-                    <span id="recAction" class="px-3 py-1 rounded text-white"></span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="font-semibold">Confidence:</span>
-                    <span id="recConfidence"></span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="font-semibold">Risk Level:</span>
-                    <span id="recRisk"></span>
-                </div>
-                <div class="flex justify-between items-center">
-                    <span class="font-semibold">Suggested Amount:</span>
-                    <span id="recAmount"></span>
-                </div>
-                <div class="mt-2">
-                    <span class="font-semibold">Reason:</span>
-                    <p id="recReason" class="mt-1 text-gray-600"></p>
-                </div>
-
-                <div class="mt-2">
-                  <span class="font-semibold">Note:</span>
-                  <p id="recReason" class="mt-1 text-gray-600">
-                    <b>Thời Điểm Mua và Chốt Lời</b>
-                    <br>Mua: Khi RSI dưới 30 và có dấu hiệu đảo chiều, xem xét mua vào.
-                    br
-                    Chốt lời: Khi RSI trên 70 và có dấu hiệu đảo chiều, xem xét bán hoặc chốt lời.</p>
-              </div>
+        <!-- Loading Indicator -->
+        <div id="loading" class="flex justify-center my-8 hidden">
+            <div class="flex flex-col items-center">
+                <div class="loading mb-4"></div>
+                <p class="text-sm text-gray-400">Processing market data...</p>
             </div>
         </div>
-
-        <div id="errorMessage" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 hidden">
-        </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div class="chart-container p-6">
-                <div id="priceChart"></div>
-            </div>
-            <div class="chart-container p-6">
-                <div id="indicatorCharts">
-                    <div id="rsiChart"></div>
-                    <div id="macdChart"></div>
+        
+        <!-- Results Section -->
+        <div id="results-section" class="hidden">
+            <!-- Trading Signal Card -->
+            <div class="mb-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="col-span-2">
+                    <div class="p-6 bg-[#1e2329] rounded-lg shadow h-full">
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h3 class="text-xl font-bold mb-1" id="result-symbol">BTCUSDT</h3>
+                                <div class="flex items-center">
+                                    <span class="text-sm text-gray-400 mr-4" id="result-timeframe">1h</span>
+                                    <span class="text-sm text-gray-400" id="result-time">Updated: Just now</span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold mb-1" id="result-price">$0.00</div>
+                                <div id="result-direction-badge" class="inline-block px-2 py-1 text-xs font-medium rounded badge-neutral">
+                                    NEUTRAL
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chart Area -->
+                        <div class="chart-container rounded-lg p-2 mb-6">
+                            <div id="prediction-chart" class="w-full h-64"></div>
+                        </div>
+                        
+                        <!-- Indicator Tables -->
+                        <div>
+                            <h4 class="font-medium mb-3 text-[#f0b90b]">Technical Indicators</h4>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-left">
+                                    <thead>
+                                        <tr>
+                                            <th class="pb-2 text-sm font-medium text-gray-400">Indicator</th>
+                                            <th class="pb-2 text-sm font-medium text-gray-400">Value</th>
+                                            <th class="pb-2 text-sm font-medium text-gray-400">Signal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="indicators-table">
+                                        <!-- Indicators will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        let priceChart, rsiChart, macdChart;
-
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
-            errorDiv.classList.remove('hidden');
-            setTimeout(() => errorDiv.classList.add('hidden'), 5000);
-        }
-
-        function initCharts() {
-            const commonOptions = {
-                chart: {
-                    type: 'line',
-                    animations: {
-                        enabled: false
-                    },
-                    zoom: {
-                        enabled: true
-                    },
-                    background: '#1e2329',
-                    foreColor: '#eaecef'
-                },
-                dataLabels: {
-                    enabled: false
-                },
-                stroke: {
-                    curve: 'smooth',
-                    width: 2
-                },
-                markers: {
-                    size: 0
-                },
-                xaxis: {
-                    type: 'datetime',
-                    labels: {
-                        datetimeUTC: false
-                    }
-                },
-                tooltip: {
-                    x: {
-                        format: 'dd MMM yyyy HH:mm:ss'
-                    }
-                },
-                theme: {
-                    mode: 'dark',
-                    palette: 'palette1'
-                },
-                colors: [
-                    '#00C176', // Actual - Green
-                    '#848E9C', // Historical - Gray
-                    '#F6465D', // Prediction - Red
-                    '#F0B90B', // SMA - Binance Yellow
-                    '#3375BB'  // EMA - Blue
-                ],
-                stroke: {
-                    curve: 'smooth',
-                    width: [2, 1, 2, 1, 1]
-                },
-                markers: {
-                    size: [0, 0, 4, 0, 0],
-                    strokeWidth: 2,
-                    hover: {
-                        size: 6
-                    }
-                },
-                grid: {
-                    borderColor: '#2c3139',
-                    xaxis: {
-                        lines: {
-                            show: true,
-                            color: '#2c3139'
-                        }
-                    },
-                    yaxis: {
-                        lines: {
-                            show: true,
-                            color: '#2c3139'
-                        }
-                    }
-                }
-            };
-
-            const priceOptions = {
-                ...commonOptions,
-                chart: {
-                    ...commonOptions.chart,
-                    height: 500,
-                    id: 'price',
-                    toolbar: {
-                        show: true,
-                        tools: {
-                            download: true,
-                            selection: true,
-                            zoom: true,
-                            zoomin: true,
-                            zoomout: true,
-                            pan: true,
-                            reset: true
-                        }
-                    }
-                },
-                title: {
-                    text: 'Price Prediction',
-                    align: 'center'
-                },
-                yaxis: {
-                    title: {
-                        text: 'Price'
-                    },
-                    labels: {
-                        formatter: (value) => value.toFixed(8)
-                    }
-                },
-                series: [{
-                    name: 'Actual',
-                    data: []
-                }, {
-                    name: 'Historical',
-                    data: []
-                }, {
-                    name: 'Prediction',
-                    data: []
-                }, {
-                    name: 'SMA',
-                    data: []
-                }, {
-                    name: 'EMA',
-                    data: []
-                }]
-            };
-
-            // Fix RSI data updating
-            const rsiOptions = {
-                ...commonOptions,
-                chart: {
-                    ...commonOptions.chart,
-                    height: 200,
-                    id: 'rsi',
-                    toolbar: {
-                        show: false
-                    }
-                },
-                title: {
-                    text: 'RSI Indicator',
-                    align: 'center'
-                },
-                yaxis: {
-                    title: {
-                        text: 'RSI'
-                    },
-                    min: 0,
-                    max: 100,
-                    tickAmount: 4
-                },
-                series: [{
-                    name: 'RSI',
-                    data: []
-                }],
-                annotations: {
-                    yaxis: [
-                        {
-                            y: 70,
-                            borderColor: '#F6465D',
-                            label: {
-                                text: 'Overbought',
-                                style: { color: '#F6465D' }
-                            }
-                        },
-                        {
-                            y: 30,
-                            borderColor: '#00C176',
-                            label: {
-                                text: 'Oversold',
-                                style: { color: '#00C176' }
-                            }
-                        }
-                    ]
-                }
-            };
-
-            priceChart = new ApexCharts(document.querySelector("#priceChart"), priceOptions);
-            rsiChart = new ApexCharts(document.querySelector("#rsiChart"), rsiOptions);
-
-            priceChart.render();
-            rsiChart.render();
-        }
-
-        function updateRecommendation(recommendation) {
-            const recDiv = document.getElementById('recommendation');
-            if (!recommendation) {
-                recDiv.classList.add('hidden');
-                return;
-            }
-
-            recDiv.classList.remove('hidden');
-            
-            const actionSpan = document.getElementById('recAction');
-            actionSpan.textContent = recommendation.action;
-            actionSpan.className = 'px-3 py-1 rounded text-white ' + 
-                (recommendation.action === 'BUY' ? 'bg-green-500' : 
-                 recommendation.action === 'SELL' ? 'bg-red-500' : 
-                 'bg-gray-500');
-
-            document.getElementById('recConfidence').textContent = `${recommendation.confidence}%`;
-            document.getElementById('recRisk').textContent = recommendation.riskLevel;
-            document.getElementById('recAmount').textContent = recommendation.suggestedAmount.toFixed(8);
-            document.getElementById('recReason').textContent = recommendation.reason;
-        }
-
-        async function updateChart() {
-            const symbol = document.getElementById('symbol').value || 'BTCUSDT';
-            const interval = document.getElementById('interval').value;
-
-            try {
-                const response = await fetch(`/predict/${symbol}/${interval}`);
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
                 
-                const data = await response.json();
-                if (data.error) {
-                    throw new Error(data.error);
-                }
-
-                // Tách riêng điểm dự đoán cuối cùng
-                const lastPredicted = data.prices.predicted[data.prices.predicted.length - 1];
-                const historicalPredicted = data.prices.predicted.slice(0, -1);
-
-                const priceSeries = [
-                    {
-                        name: 'Actual',
-                        data: data.prices.actual
-                    },
-                    {
-                        name: 'Historical',
-                        data: historicalPredicted,
-                        color: '#999999'
-                    },
-                    {
-                        name: 'Prediction',
-                        data: [data.prices.actual[data.prices.actual.length - 1], lastPredicted],
-                        color: '#ff0000',
-                        dashArray: 5
-                    },
-                    {
-                        name: 'SMA',
-                        data: data.prices.sma
-                    }
-                ];
-
-                // Fix RSI data updating
-                const rsiData = data.indicators.rsi.map(point => ({
-                    x: point.x,
-                    y: point.y
-                }));
-
-                const rsiSeries = [{
-                    name: 'RSI',
-                    data: rsiData
-                }];
-
-                await Promise.all([
-                    priceChart.updateSeries(priceSeries),
-                    rsiChart.updateSeries(rsiSeries)
-                ]);
-
-                // Update recommendation directly from the response
-                if (data.lastRecommendation) {
-                    updateRecommendation(data.lastRecommendation);
-                } else {
-                    updateRecommendation(null);
-                }
-
-            } catch (error) {
-                console.error('Error:', error);
-                showError(error.message);
-                updateRecommendation(null);
-                
-                await Promise.all([
-                    priceChart.updateSeries([{ name: 'Actual', data: [] }]),
-                    rsiChart.updateSeries([{ name: 'RSI', data: [] }])
-                ]);
-            }
-        }
-
-        function updateChartStyles() {
-            document.querySelectorAll('.apexcharts-canvas').forEach(chart => {
-                chart.style.transition = 'all 0.3s ease';
-            });
-        }
-
-        // Initialize charts on load
-        document.addEventListener('DOMContentLoaded', () => {
-            initCharts();
-            updateChart();
-        });
-    </script>
+                <div>
+                    <div class="p-6 bg-[#1e2329] rounded-lg shadow h-full">
+                        <h3 class="text-lg font-semibold mb-4">Trading Signal</h3>
+                        
+                        <div class="mb-6">
+                            <div class="flex justify-between mb-2">
+                                <span class="text-sm text-gray-400">Signal Strength</span>
+                                <span class="text-sm font-medium" id="confidence-value">0%</span>
+                            </div>
+                            <div class="w-full bg-[#2b3139] rounded-full h-2.5">
+                                <div id="confidence-bar" class="bg-[#f0b90b] h-2.5 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <div class="text-sm text-gray-400 mb-1">Entry Price</div>
+                                    <div class="text-lg font-semibold" id="entry-price">$0.00</div>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-400 mb-1">Direction</div>
+                                    <div class="text-lg font-semibold" id="entry-direction">Neutral</div>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-400 mb-1">Target Price</div>
+                                    <div class="text-lg font-semibold text-[#26a69a]" id="target-price">$0.00</div>
+                                </div>
+                                <div>
+                                    <div class="text-sm text-gray-400 mb-1">Stop Loss</div>
+                                    <div class="text-lg font-semibold text-[#ef5350]" id="stop-loss">$0.00</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <div class="text-sm text-gray-400 mb-2">Risk/Reward Ratio</div>
+                            <div class="flex items-center">
+                                <div class="h-2 bg-[#ef5350] rounded-l" id="risk-bar" style="width: 50%"></div>
+                                <div class="h-2 bg-[#26a69a] rounded-r" id="reward-bar" style="width: 50%"></div>
+                            </div>
+                            <div class="flex justify-between mt-1 text-xs">
+                                <div>Risk: <span id="risk-value">0%</span></div>
+                                <div>Reward: <span id="reward-value">0%</span></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="text-sm text-gray-400 mb-2">Historical Accuracy</div>
+                            <div class="text-lg font-semibold" id="historical-accuracy">N/A</div>
+                            <p class="text-xs text-gray-500 mt-1">Based on backtesting results</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <script src="/app.js"></script>
 </body>
 </html>

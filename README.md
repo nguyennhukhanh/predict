@@ -1,69 +1,92 @@
-# Crypto Price Predictor
+# Crypto Quant Trading Platform
 
-Ứng dụng dự đoán giá tiền mã hóa sử dụng dữ liệu từ Binance API.
+A quantitative trading platform for cryptocurrency that provides trading signals for long/short positions based on technical analysis.
 
-## Các Chỉ Số Hiển Thị
+## Features
 
-### Biểu Đồ
+- Multiple trading strategies:
+  - Trend Following Strategy: Uses MACD and RSI to identify trends and momentum
+  - Mean Reversion Strategy: Uses Bollinger Bands and Stochastic RSI to identify overbought/oversold conditions
+- Real-time market data from Binance API
+- Technical indicators calculation
+- Target price and stop loss recommendations
+- Interactive UI with charts
 
-1. **Price Analysis**
+## Installation
 
-   - Đường giá lịch sử (màu xanh lá)
-   - Đường dự đoán (màu cam, nét đứt)
+```bash
+# Install dependencies
+bun install
 
-2. **Technical Indicators**
-   - RSI (Relative Strength Index): Chỉ báo về xu hướng quá mua/quá bán (0-100)
-   - Momentum: Động lượng giá (-100 đến 100)
-   - Trend: Xu hướng thị trường (-100 đến 100)
+# Run in development mode
+bun dev
 
-### Market Analysis
+# Run in production
+bun start
+```
 
-1. **Current Price**: Giá hiện tại của coin
-2. **Predicted Price**: Giá dự đoán trong tương lai gần
-3. **Market Pattern**: Mô hình thị trường hiện tại
-   - ACCUMULATION: Giai đoạn tích lũy
-   - BREAKOUT_UP: Đột phá tăng giá
-   - BREAKOUT_DOWN: Đột phá giảm giá
-   - CONSOLIDATION: Giai đoạn tích lũy ngang
-4. **Trend**: Xu hướng thị trường
-   - STRONG_BULLISH: Xu hướng tăng mạnh
-   - BULLISH: Xu hướng tăng
-   - BEARISH: Xu hướng giảm
-   - STRONG_BEARISH: Xu hướng giảm mạnh
-   - NEUTRAL: Trung tính
+## API Endpoints
 
-### Technical Analysis
+### GET /api/predict
 
-1. **RSI**: Chỉ báo sức mạnh tương đối
-   - > 70: Quá mua
-   - < 30: Quá bán
-2. **Momentum**: Động lượng của xu hướng giá
-3. **Volatility**: Độ biến động của thị trường
-4. **Confidence**: Độ tin cậy của dự đoán
+Generate a trading signal for a specified symbol and timeframe.
 
-### Prediction Results
+**Parameters:**
+- `symbol` (string): Cryptocurrency pair (e.g., BTCUSDT)
+- `timeframe` (string): Candle timeframe (15m, 1h, 4h, 1d)
+- `strategy` (string): Trading strategy to use (trend-following, mean-reversion)
 
-1. **Price Movement**: Phần trăm thay đổi giá dự kiến
-2. **Confidence Score**: Độ tin cậy của dự đoán
-3. **Time Frame**: Khung thời gian phân tích
-4. **Risk Level**: Mức độ rủi ro
-   - High: Rủi ro cao (>50% volatility)
-   - Medium: Rủi ro trung bình (30-50% volatility)
-   - Low: Rủi ro thấp (<30% volatility)
-5. **Signal Strength**: Độ mạnh của tín hiệu giao dịch
-6. **Volume Profile**: Mức độ tham gia của thị trường
-7. **Market Sentiment**: Tâm lý thị trường tổng thể
-8. **Pattern Recognition**: Nhận diện mô hình giá
+**Response:**
+```json
+{
+  "symbol": "BTCUSDT",
+  "timeframe": "1h",
+  "timestamp": 1630000000000,
+  "currentPrice": 50000,
+  "prediction": {
+    "direction": "long",
+    "confidence": 0.85,
+    "targetPrice": 52500,
+    "stopLoss": 48750,
+    "indicators": [
+      { "name": "MACD", "value": 125.5, "color": "#26a69a" },
+      { "name": "RSI", "value": 58.2, "color": "#b2b5be" }
+    ]
+  },
+  "historicalAccuracy": 0.72
+}
+```
 
-## Sử Dụng
+### GET /api/strategies
 
-1. Nhập mã coin (ví dụ: BTCUSDT, ETHUSDT)
-2. Chọn khung thời gian phân tích
-3. Nhấn "Predict" để xem kết quả dự đoán
+Get available trading strategies.
 
-## Lưu Ý
+**Response:**
+```json
+[
+  {
+    "id": "trend-following",
+    "name": "Trend Following Strategy", 
+    "description": "Uses MACD and RSI to identify trends and momentum",
+    "timeframes": ["1h", "4h", "1d"]
+  },
+  {
+    "id": "mean-reversion",
+    "name": "Mean Reversion Strategy",
+    "description": "Uses Bollinger Bands and Stochastic RSI to identify overbought/oversold conditions",
+    "timeframes": ["15m", "1h", "4h"]
+  }
+]
+```
 
-- Dự đoán chỉ mang tính tham khảo
-- Độ tin cậy phụ thuộc vào nhiều yếu tố thị trường
-- Nên kết hợp với các phương pháp phân tích khác
-- Giới hạn 30 request/phút để tránh quá tải
+## Technologies Used
+
+- Bun.js - JavaScript/TypeScript runtime
+- TechnicalIndicators - Technical analysis library
+- ApexCharts - Interactive charts
+- TailwindCSS - Styling
+- Binance API - Market data
+
+## License
+
+MIT

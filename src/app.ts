@@ -1,100 +1,80 @@
 import { serve } from "bun";
-import { predictPrice } from "./prediction";
-import { TimeInterval } from "./types";
 import { file } from "bun";
+import { getPrediction, getAvailableStrategies } from "./prediction";
+
+// Rate limiter to prevent abuse
+import { RateLimiter } from "limiter";
+const limiter = new RateLimiter({ tokensPerInterval: 50, interval: "minute" });
 
 const server = serve({
     port: 1505,
     async fetch(req) {
         const url = new URL(req.url);
-        
-        // Serve static HTML
-        if (url.pathname === "/" || url.pathname === "/index.html") {
-            return new Response(file("public/index.html"));
+
+        // Apply rate limiting
+        if (!await limiter.removeTokens(1)) {
+            return new Response("Too many requests", { status: 429 });
         }
 
-        // Handle API requests
-        if (url.pathname.startsWith("/predict/")) {
-            const [, , symbol, intervalStr] = url.pathname.split("/");
-            
-            if (!symbol || !intervalStr || !Object.values(TimeInterval).includes(intervalStr as TimeInterval)) {
-                return new Response(
-                    JSON.stringify({ error: "Invalid interval or symbol" }), 
-                    { 
-                        status: 400,
-                        headers: { 
-                            "Content-Type": "application/json",
-                            "Cache-Control": "no-cache"
-                        }
-                    }
-                );
+        try {
+            // Serve static HTML
+            if (url.pathname === "/" || url.pathname === "/index.html") {
+                return new Response(file("public/index.html"));
             }
 
-            try {
-                const predictions = await predictPrice(symbol, intervalStr as TimeInterval);
-                
-                if (!predictions || predictions.length === 0) {
-                    throw new Error("No prediction data available");
+            // Serve static JS
+            if (url.pathname === "/app.js") {
+                return new Response(file("public/app.js"), {
+                    headers: { "Content-Type": "application/javascript" }
+                });
+            }
+
+            // API endpoints
+            if (url.pathname === "/api/strategies") {
+                return new Response(JSON.stringify(getAvailableStrategies()), {
+                    headers: { "Content-Type": "application/json" }
+                });
+            }
+
+            // Handle prediction requests
+            if (url.pathname === "/api/predict") {
+                const symbol = url.searchParams.get("symbol")?.toUpperCase() || "BTCUSDT";
+                const timeframe = url.searchParams.get("timeframe") || "1h";
+                const strategy = url.searchParams.get("strategy") as "trend-following" | "mean-reversion" || "trend-following";
+
+                // Validate inputs
+                if (!/^[A-Z0-9]{2,20}$/.test(symbol)) {
+                    return new Response(JSON.stringify({ error: "Invalid symbol" }), {
+                        status: 400,
+                        headers: { "Content-Type": "application/json" }
+                    });
                 }
 
-                const chartData = {
-                    timestamps: predictions.map(p => p.timestamp),
-                    prices: {
-                        actual: predictions.map(p => ({
-                            x: p.timestamp,
-                            y: Number(p.actual.toFixed(8))
-                        })).filter(p => p.y !== 0),
-                        predicted: predictions.map(p => ({
-                            x: p.timestamp,
-                            y: Number(p.predicted.toFixed(8)),
-                            recommendation: p.recommendation
-                        })),
-                        sma: predictions.map(p => ({
-                            x: p.timestamp,
-                            y: Number(p.indicators.sma.toFixed(8))
-                        })),
-                        ema: predictions.map(p => ({
-                            x: p.timestamp,
-                            y: Number(p.indicators.ema.toFixed(8))
-                        }))
-                    },
-                    indicators: {
-                        rsi: predictions.map(p => ({
-                            x: p.timestamp,
-                            y: Number(p.indicators.rsi.toFixed(2))
-                        })),
-                        macd: predictions.map(p => ({
-                            x: p.timestamp,
-                            macd: Number(p.indicators.macd.macd.toFixed(8)),
-                            signal: Number(p.indicators.macd.signal.toFixed(8)),
-                            histogram: Number(p.indicators.macd.histogram.toFixed(8))
-                        }))
-                    },
-                    lastIndicators: predictions[predictions.length - 1].indicators,
-                    lastRecommendation: predictions[predictions.length - 1].recommendation
-                };
-
-                return new Response(JSON.stringify(chartData), {
-                    headers: { 
-                        "Content-Type": "application/json",
-                        "Cache-Control": "no-cache"
-                    }
-                });
-            } catch (error: any) {
-                return new Response(
-                    JSON.stringify({ 
-                        error: error.message || "Failed to process request"
-                    }), 
-                    {
-                        status: 500,
+                if (!["1m", "5m", "15m", "30m", "1h", "4h", "1d"].includes(timeframe)) {
+                    return new Response(JSON.stringify({ error: "Invalid timeframe" }), {
+                        status: 400,
                         headers: { "Content-Type": "application/json" }
-                    }
-                );
-            }
-        }
+                    });
+                }
 
-        return new Response("Not Found", { status: 404 });
+                const prediction = await getPrediction(symbol, timeframe, strategy);
+
+                return new Response(JSON.stringify(prediction), {
+                    headers: { "Content-Type": "application/json" }
+                });
+            }
+
+            // 404 for everything else
+            return new Response("Not Found", { status: 404 });
+
+        } catch (error) {
+            console.error("Server error:", error);
+            return new Response(JSON.stringify({ error: "Internal server error" }), {
+                status: 500,
+                headers: { "Content-Type": "application/json" }
+            });
+        }
     },
 });
 
-console.log(`Server running at http://localhost:${server.port}`);
+console.log(`Quant Trading Server running at http://localhost:${server.port}`);
