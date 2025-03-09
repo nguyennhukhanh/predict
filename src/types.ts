@@ -11,11 +11,14 @@ export interface MarketData {
   symbol: string;
   timeframe: string;
   candles: OHLCV[];
+  marketSentiment?: number;
+  orderFlowData?: any;
+  onChainMetrics?: any;
 }
 
 export interface Indicator {
   name: string;
-  value: number | number[];
+  value: number | number[]; // Can be a single number or array of numbers
   color?: string;
 }
 
