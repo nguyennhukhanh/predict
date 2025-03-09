@@ -5,8 +5,14 @@ import BigDecimal from 'js-big-decimal';
 // Helper function to get price data
 async function fetchMarketData(symbol: string, timeframe: string, limit = 200): Promise<MarketData> {
   try {
+    // Convert timeframe to Binance format if needed
+    let binanceTimeframe = timeframe;
+    if (timeframe === '1m' || timeframe === '5m') {
+      binanceTimeframe = timeframe; // Binance already supports these formats
+    }
+    
     // Fetch OHLCV data from Binance
-    const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${timeframe}&limit=${limit}`);
+    const response = await fetch(`https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${binanceTimeframe}&limit=${limit}`);
     const data = await response.json();
     
     const candles: OHLCV[] = data.map((candle: any) => ({
@@ -96,7 +102,7 @@ export const trendFollowingStrategy: TradingStrategy = {
   id: 'trend-following',
   name: 'Enhanced Trend Following Strategy',
   description: 'Uses MACD, RSI, EMAs, market sentiment and volume analysis for high-accuracy predictions',
-  timeframes: ['15m', '30m', '1h', '4h', '1d'],
+  timeframes: ['1m', '5m', '15m', '30m', '1h', '4h', '1d'],
   indicators: ['MACD', 'RSI', 'EMA', 'ATR', 'Volume', 'Market Sentiment'],
   
   execute(data: MarketData): PredictionResult {
@@ -321,7 +327,7 @@ export const meanReversionStrategy: TradingStrategy = {
   id: 'mean-reversion',
   name: 'Enhanced Mean Reversion Strategy',
   description: 'Uses Bollinger Bands, Stochastic RSI and market sentiment to identify high-probability reversals',
-  timeframes: ['15m', '30m', '1h', '4h'],
+  timeframes: ['1m', '5m', '15m', '30m', '1h', '4h'],
   indicators: ['Bollinger Bands', 'Stochastic RSI', 'ATR', 'Market Sentiment'],
   
   execute(data: MarketData): PredictionResult {
@@ -529,7 +535,7 @@ export const mlEnhancedStrategy: TradingStrategy = {
   id: 'ml-enhanced',
   name: 'Machine Learning Enhanced Strategy',
   description: 'Combines technical analysis with machine learning models for high-precision predictions',
-  timeframes: ['15m', '30m', '1h', '4h', '1d'],
+  timeframes: ['1m', '5m', '15m', '30m', '1h', '4h', '1d'],
   indicators: ['ML Model', 'Technical Indicators', 'Market Sentiment'],
   
   execute(data: MarketData): PredictionResult {

@@ -148,6 +148,8 @@ class TradingChart {
     let timeStep = 60 * 60 * 1000; // 1h default in milliseconds
     
     switch(timeframe) {
+      case '1m': timeStep = 1 * 60 * 1000; break;
+      case '5m': timeStep = 5 * 60 * 1000; break;
       case '15m': timeStep = 15 * 60 * 1000; break;
       case '30m': timeStep = 30 * 60 * 1000; break;
       case '1h': timeStep = 60 * 60 * 1000; break;
@@ -381,17 +383,20 @@ function updateTimeframeOptions() {
   
   // You would fetch this from your API in a real app
   const strategyTimeframes = {
-    'trend-following': ['15m', '30m', '1h', '4h', '1d'],
-    'mean-reversion': ['15m', '30m', '1h', '4h']
+    'trend-following': ['1m', '5m', '15m', '30m', '1h', '4h', '1d'],
+    'mean-reversion': ['1m', '5m', '15m', '30m', '1h', '4h'],
+    'ml-enhanced': ['1m', '5m', '15m', '30m', '1h', '4h', '1d']
   };
   
   const selectedStrategy = strategySelect.value;
-  const timeframes = strategyTimeframes[selectedStrategy] || ['15m', '30m', '1h', '4h', '1d'];
+  const timeframes = strategyTimeframes[selectedStrategy] || ['1m', '5m', '15m', '30m', '1h', '4h', '1d'];
   
   const currentTimeframe = timeframeSelect.value;
   timeframeSelect.innerHTML = '';
   
   const timeframeLabels = {
+    '1m': '1 Minute',
+    '5m': '5 Minutes',
     '15m': '15 Minutes',
     '30m': '30 Minutes',
     '1h': '1 Hour',
@@ -616,6 +621,8 @@ function renderBasicChart(prediction) {
   // Generate time steps based on timeframe
   let timeStep = 60 * 60 * 1000; // 1h default in milliseconds
   switch(timeframe) {
+    case '1m': timeStep = 1 * 60 * 1000; break;
+    case '5m': timeStep = 5 * 60 * 1000; break;
     case '15m': timeStep = 15 * 60 * 1000; break;
     case '30m': timeStep = 30 * 60 * 1000; break;
     case '1h': timeStep = 60 * 60 * 1000; break;
